@@ -1,0 +1,22 @@
+<table *ngIf="stock && cards" class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Roll</th>
+      <th scope="col">Symbol</th>
+      <th scope="col">Card</th>
+      <th scope="col">Result</th>
+      <th scope="col">Cost</th>
+      <th scope="col">Inventory #</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let card of cards | async" class="machi-{{card['type']}}" (click)="purchaseCard(card)">
+      <td *ngFor="let col of columns">
+        {{card[col]}}
+      </td>
+      <td>
+        {{stock[card["index"]]}}
+      </td>
+    </tr>
+  </tbody>
+</table>

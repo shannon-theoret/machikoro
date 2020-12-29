@@ -1,0 +1,42 @@
+<div *ngIf="player">
+
+<div><b>Coins</b> {{player.coins}}</div><div *ngIf="player.coins!=prevPlayer.coins">(prev {{prevPlayer.coins}})</div>
+<table>
+  <thead>
+  <tr>
+    <th>Landmarks</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngIf="player.hasTrainStation">
+    <td>Train Station</td>
+  </tr>
+  <tr *ngIf="player.hasShoppingMall">
+    <td>Shopping Mall</td>
+  </tr>
+  <tr *ngIf="player.hasAmusementPark">
+    <td>Amusement Park</td>
+  </tr>
+  <tr *ngIf="player.hasRadioTower">
+    <td>Radio Tower</td>
+  </tr>
+  <tr *ngIf="!player.hasTrainStation && !player.hasShoppingMall && !player.hasAmusementPark && !player.hasRadioTower">
+    <td>None</td>
+  </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th>Card</th>
+      <th>Stock</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let card of cards | async">
+      <td *ngIf="player.stock[card['index']]">{{card["card"]}}</td>
+      <td *ngIf="player.stock[card['index']]">{{player.stock[card["index"]]}}</td>
+    </tr>
+  </tbody>
+</table>

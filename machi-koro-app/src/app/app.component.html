@@ -1,0 +1,50 @@
+<div style="text-align:center">
+  <h1>
+    Machi Koro
+  </h1>
+
+  <button class="btn btn-light" *ngIf="!started" (click)="startGame()">Start Game</button>
+  <button class="btn btn-light" *ngIf="!started" (click)="testGame()">Test Game</button>
+  <button class="btn btn-light" *ngIf="started && game.step == 'buy'" (click)="endTurn()">Next</button>
+  <button class="btn btn-light" *ngIf="started && (game.step === 'roll' || game.step === 'confirm')" (click)="rollSingleDie()">Roll Single Die</button>
+  <button class="btn btn-light" *ngIf="started && (game.step === 'roll' || game.step === 'confirm') && game.currentPlayer.hasTrainStation" (click)="rollTwoDice()">Roll Two Dice</button>
+  <button class="btn btn-light" *ngIf="started && game.step === 'confirm'" (click)="confirmRoll()">Accept Roll</button>
+  <button class="btn btn-light" *ngIf="started && game.step === 'steal' && game.currentPlayerNumber !== 1" (click)="steal(1)">Steal From Player 1</button>
+  <button class="btn btn-light" *ngIf="started && game.step === 'steal' && game.currentPlayerNumber !== 2" (click)="steal(2)">Steal From Player 2</button>
+  <button class="btn btn-light" *ngIf="started && game.step === 'steal' && game.currentPlayerNumber !== 3" (click)="steal(3)">Steal From Player 3</button>
+
+  <div class="instructions m-3" *ngIf="!started">Click start to begin</div>
+  <div class="instructions m-3" *ngIf="started && game.step === 'roll' && !game.currentPlayer.hasTrainStation">Player {{game.currentPlayerNumber}} please roll the die.</div>
+  <div class="instructions m-3" *ngIf="started && game.step === 'roll' && game.currentPlayer.hasTrainStation">Player {{game.currentPlayerNumber}} please roll one or two dice.</div>
+  <div class="instructions m-3" *ngIf="started && game.step === 'buy' && game.currentPlayer.coins > 0">Player {{game.currentPlayerNumber}} please select an item to purchase or click "Next" to end your turn.</div>
+  <div class="instructions m-3" *ngIf="started && game.step === 'buy' && game.currentPlayer.coins === 0">Player {{game.currentPlayerNumber}} you have no money, please select "Next" to end your turn.</div>
+  <div class="instructions m-3" *ngIf="started && game.step === 'confirm'">Player {{game.currentPlayerNumber}} please accept your roll or choose to re-roll.</div>
+  <div class="instructions m-3" *ngIf="started && game.step === 'steal'">Player {{game.currentPlayerNumber}} please select a player to steal 5 coins from.</div>
+
+
+  <app-dice class="m-3" *ngIf="started" [recentRoll]="game.recentRoll"></app-dice>
+
+  <div *ngIf="started" class="row">
+    <div class="col-sm roundedCorner m-3" [ngClass]="{'current-player': game.currentPlayerNumber===1}">
+      <h5>Player 1</h5>
+      <app-player *ngIf="started" [player]=game.player1 [prevPlayer]=prevGame.player1></app-player>
+    </div>
+    <div class="col-sm roundedCorner p-2 m-3" [ngClass]="{'current-player': game.currentPlayerNumber===2}">
+      <h5>Player 2</h5>
+      <app-player *ngIf="started" [player]=game.player2 [prevPlayer]=prevGame.player2></app-player>
+    </div>
+    <div class="col-sm roundedCorner p-2 m-3" [ngClass]="{'current-player': game.currentPlayerNumber===3}">
+      <h5>Player 3</h5>
+      <app-player *ngIf="started" [player]=game.player3 [prevPlayer]=prevGame.player3></app-player>
+    </div>
+  </div>
+
+  <div class="m-3">
+    <button class="btn btn-light" *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasTrainStation" (click)="purchaseLandmark(landmarks[0])">Purchase {{landmarks[0].name}}</button>
+    <button class="btn btn-light" *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasShoppingMall" (click)="purchaseLandmark(landmarks[1])">Purchase {{landmarks[1].name}}</button>
+    <button class="btn btn-light" *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasAmusementPark" (click)="purchaseLandmark(landmarks[2])">Purchase {{landmarks[2].name}}</button>
+    <button class="btn btn-light" *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasRadioTower" (click)="purchaseLandmark(landmarks[3])">Purchase {{landmarks[3].name}}</button>
+  </div>
+
+  <app-inventory *ngIf="started" [stock]=game.stock></app-inventory>
+<router-outlet></router-outlet>
