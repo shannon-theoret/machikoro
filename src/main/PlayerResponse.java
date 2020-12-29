@@ -52,6 +52,8 @@ public class PlayerResponse {
         this.hasRadioTower = hasRadioTower;
     }
 
+    public boolean isHasWon() { return  hasTrainStation && hasShoppingMall && hasAmusementPark && hasRadioTower; }
+
     public Map<Integer, Integer> getStock() {
         return stock;
     }

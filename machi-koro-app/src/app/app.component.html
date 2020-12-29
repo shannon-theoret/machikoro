@@ -20,6 +20,7 @@
   <div class="instructions m-3" *ngIf="started && game.step === 'buy' && game.currentPlayer.coins === 0">Player {{game.currentPlayerNumber}} you have no money, please select "Next" to end your turn.</div>
   <div class="instructions m-3" *ngIf="started && game.step === 'confirm'">Player {{game.currentPlayerNumber}} please accept your roll or choose to re-roll.</div>
   <div class="instructions m-3" *ngIf="started && game.step === 'steal'">Player {{game.currentPlayerNumber}} please select a player to steal 5 coins from.</div>
+  <div class="instructions m-3" *ngIf="started && game.step === 'won' && game.currentPlayer.hasWon">Player {{game.currentPlayerNumber}} has won the game!</div>
 
 
   <app-dice class="m-3" *ngIf="started" [recentRoll]="game.recentRoll"></app-dice>

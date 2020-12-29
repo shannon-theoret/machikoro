@@ -124,7 +124,7 @@ export class Player implements Player{
   hasRadioTower : boolean;
   stock : Stock;
   coins : number;
-
+  hasWon : boolean;
 }
 
 
@@ -135,6 +135,7 @@ export interface Player {
   hasRadioTower : boolean;
   stock : Stock;
   coins : number;
+  hasWon : boolean;
 }
 
 export interface Game {

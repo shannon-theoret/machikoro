@@ -4,7 +4,8 @@ public enum Step {
     ROLL("roll"),
     CONFIRM_ROLL("confirm"),
     STEAL("steal"),
-    BUY("buy");
+    BUY("buy"),
+    WON("won");
 
     private String stepName;
 

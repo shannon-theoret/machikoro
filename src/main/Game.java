@@ -278,6 +278,10 @@ public class Game {
         }
 
         public void endTurn() {
+            if (currentPlayer.hasWon()) {
+                step = Step.WON;
+                return;
+            }
             if (!(currentPlayer.hasAmusementPark() && currentPlayer.isRolledDoubles())) {
                 currentPlayer.setHasRolledOnce(false);
                 currentPlayer = currentPlayer.getPlayerToLeft();
