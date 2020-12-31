@@ -23,8 +23,8 @@ export class AppComponent {
   }
 
 
-  startGame() {
-    this.http.get<Game>(this.ROOT_URL + "/game/start")
+  startGame(code) {
+    this.http.get<Game>(this.ROOT_URL + "/game/start/" + code)
       .pipe(tap(game => {
         this.game = game
         this.prevGame = game}))
@@ -32,18 +32,18 @@ export class AppComponent {
     this.started = true;
   }
 
-  testGame() {
+ /* testGame() {
     this.http.get<Game>(this.ROOT_URL + "/game/test")
       .pipe(tap(game => {
         this.game = game
         this.prevGame = game}))
       .subscribe();
     this.started = true;
-  }
+  }*/
 
   rollSingleDie() {
     this.prevGame = this.game;
-    this.http.get<Game>(this.ROOT_URL + "/game/rollSingle")
+    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/rollSingle")
       .pipe(tap(game => {
         this.game = game}))
       .subscribe();
@@ -51,21 +51,21 @@ export class AppComponent {
 
   rollTwoDice() {
     this.prevGame = this.game;
-    this.http.get<Game>(this.ROOT_URL + "/game/rollDouble")
+    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/rollDouble")
       .pipe(tap(game => {
         this.game = game}))
       .subscribe();
   }
 
   confirmRoll() {
-    this.http.get<Game>(this.ROOT_URL + "/game/confirm")
+    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/confirm")
       .pipe(tap(game => {
         this.game = game}))
       .subscribe();
   }
 
   steal(playerNumber) {
-    this.http.get<Game>(this.ROOT_URL + "/game/steal/" + playerNumber)
+    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/steal/" + playerNumber)
       .pipe(tap(game => {
         this.game = game}))
       .subscribe();
@@ -85,7 +85,7 @@ export class AppComponent {
       return;
     }
     this.prevGame = this.game;
-    this.http.get<Game>(this.ROOT_URL + "/game/purchaseCard/" + card.index)
+    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/purchaseCard/" + card.index)
       .pipe(tap(game => {
         this.game = game}))
       .subscribe();
@@ -101,7 +101,7 @@ export class AppComponent {
       return;
     }
     this.prevGame = this.game;
-    this.http.get<Game>(this.ROOT_URL + "/game/purchaseLandmark/" + landmark.id)
+    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/purchaseLandmark/" + landmark.id)
       .pipe(tap(game => {
         this.game = game}))
       .subscribe();
@@ -109,7 +109,7 @@ export class AppComponent {
 
   endTurn() {
     this.prevGame = this.game;
-    this.http.get<Game>(this.ROOT_URL + "/game/endTurn")
+    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/endTurn")
       .pipe(tap(game => {
         this.game = game}))
       .subscribe();
@@ -139,6 +139,7 @@ export interface Player {
 }
 
 export interface Game {
+  code : String;
   player1: Player;
   player2: Player;
   player3: Player;
@@ -150,6 +151,7 @@ export interface Game {
 }
 
 export class Game implements Game {
+  code : String;
   player1: Player;
   player2: Player;
   player3: Player;

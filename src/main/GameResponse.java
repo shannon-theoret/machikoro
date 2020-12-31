@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class GameResponse {
+    private String code;
     private PlayerResponse player1;
     private PlayerResponse player2;
     private PlayerResponse player3;
@@ -16,6 +17,7 @@ public class GameResponse {
     private Dice recentRoll;
 
     public GameResponse(Game game) {
+        code = game.getCode();
         player1 = new PlayerResponse(game.getPlayer1());
         player2 = new PlayerResponse(game.getPlayer2());
         player3 = new PlayerResponse(game.getPlayer3());
@@ -25,6 +27,11 @@ public class GameResponse {
         step = game.getStep().getStepName();
         recentRoll = new Dice(game.getRecentRoll());
     }
+
+    public String getCode() { return code; }
+
+    public void setCode(String code) { this.code = code; }
+
     public PlayerResponse getPlayer1() {
         return player1;
     }

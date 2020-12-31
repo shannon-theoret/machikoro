@@ -3,6 +3,7 @@ package main;
 import java.util.*;
 
 public class Game {
+    private String code;
     private Player player1;
     private Player player2;
     private Player player3;
@@ -31,6 +32,14 @@ public class Game {
                 gameStock.put(card, 8);
             }
         }
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public Player getPlayer1() {

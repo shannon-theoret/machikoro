@@ -2,9 +2,11 @@
   <h1>
     Machi Koro
   </h1>
+  <h4 *ngIf="started">Code {{game.code}}</h4>
 
-  <button class="btn btn-light" *ngIf="!started" (click)="startGame()">Start Game</button>
-  <button class="btn btn-light" *ngIf="!started" (click)="testGame()">Test Game</button>
+  <div *ngIf="!started"><input #gameCode>
+    <button class="btn btn-light" *ngIf="!started" (click)="startGame(gameCode.value)">Start Game</button>
+  </div>
   <button class="btn btn-light" *ngIf="started && game.step == 'buy'" (click)="endTurn()">Next</button>
   <button class="btn btn-light" *ngIf="started && (game.step === 'roll' || game.step === 'confirm')" (click)="rollSingleDie()">Roll Single Die</button>
   <button class="btn btn-light" *ngIf="started && (game.step === 'roll' || game.step === 'confirm') && game.currentPlayer.hasTrainStation" (click)="rollTwoDice()">Roll Two Dice</button>
