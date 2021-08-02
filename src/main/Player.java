@@ -19,6 +19,8 @@ public class Player {
 
     public Player(int playerNumber) {
         this.playerNumber = playerNumber;
+        stock.addCard(Card.WHEAT, 1);
+        stock.addCard(Card.BAKERY, 1);
     }
 
     public int getPlayerNumber() {
@@ -35,11 +37,6 @@ public class Player {
 
     public void setHasRolledOnce(boolean hasRolledOnce) {
         this.hasRolledOnce = hasRolledOnce;
-    }
-
-    Player() {
-        stock.addCard(Card.WHEAT, 1);
-        stock.addCard(Card.BAKERY, 1);
     }
 
     public boolean hasTrainStation() {

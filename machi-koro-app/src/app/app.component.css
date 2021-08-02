@@ -1,5 +1,6 @@
-.current-player {
-  background-color: darkgray;
+
+.not-current-player {
+  opacity: 50%;
 }
 
 .roundedCorner
@@ -11,3 +12,10 @@
   -o-box-shadow: 10px -10px 5px  rgba(0,0,0,0.6);
   border-radius:25px;
 }
+
+.playerBox {
+  border-radius: 10px;
+  box-shadow: 25px 25px 50px #1b1c1b, -25px -25px 50px #2d302f;
+
+}
+

@@ -1,6 +1,16 @@
-<div *ngIf="player">
+<div class="coin">
+  <div *ngIf="player.coins!=prevPlayer.coins"><img src="../assets/images/coinHighlighted.png"></div>
+  <div *ngIf="player.coins==prevPlayer.coins"><img src="../assets/images/coin.png"></div>
+  <div class="coinAmount">{{player.coins}}</div>
+</div>
+<br>
+<div>
 
-<div><b>Coins</b> {{player.coins}}</div><div *ngIf="player.coins!=prevPlayer.coins">(prev {{prevPlayer.coins}})</div>
+<div *ngIf="player">
+<div><h5>Player {{player.playerNumber}}</h5></div>
+
+<div class="playerContents">
+<div class="landmarks">
 <table>
   <thead>
   <tr>
@@ -8,24 +18,23 @@
   </tr>
   </thead>
   <tbody>
-  <tr *ngIf="player.hasTrainStation">
-    <td>Train Station</td>
+  <tr>
+    <td><input type="checkbox" onclick="return false;" [checked]="player.hasTrainStation"> Train Station</td>
   </tr>
-  <tr *ngIf="player.hasShoppingMall">
-    <td>Shopping Mall</td>
+  <tr>
+    <td><input type="checkbox" onclick="return false;" [checked]="player.hasShoppingMall"> Shopping Mall</td>
   </tr>
-  <tr *ngIf="player.hasAmusementPark">
-    <td>Amusement Park</td>
+  <tr>
+    <td><input type="checkbox" onclick="return false;" [checked]="player.hasAmusementPark"> Amusement Park</td>
   </tr>
-  <tr *ngIf="player.hasRadioTower">
-    <td>Radio Tower</td>
-  </tr>
-  <tr *ngIf="!player.hasTrainStation && !player.hasShoppingMall && !player.hasAmusementPark && !player.hasRadioTower">
-    <td>None</td>
+  <tr>
+    <td><input type="checkbox" onclick="return false;" [checked]="player.hasRadioTower"> Radio Tower</td>
   </tr>
   </tbody>
 </table>
+</div>
 
+  <div class="stock">
 <table>
   <thead>
     <tr>
@@ -34,9 +43,12 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let card of cards | async">
+    <tr *ngFor="let card of cards | async" [ngClass]="{'newStock': prevPlayer.stock[card['index']]!= player.stock[card['index']]}">
       <td *ngIf="player.stock[card['index']]">{{card["card"]}}</td>
       <td *ngIf="player.stock[card['index']]">{{player.stock[card["index"]]}}</td>
     </tr>
   </tbody>
 </table>
+    </div>
+</div>
+</div>

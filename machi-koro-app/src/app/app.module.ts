@@ -4,10 +4,14 @@ import { HttpClientModule } from "@angular/common/http";
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { InventoryComponent } from './inventory/inventory.component';
 import { InventoryRowComponent } from './inventory-row/inventory-row.component';
 import { PlayerComponent } from './player/player.component';
 import { DiceComponent } from './dice/dice.component';
+
 
 @NgModule({
   declarations: [
@@ -20,7 +24,8 @@ import { DiceComponent } from './dice/dice.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    NgbModule
   ],
   providers: [],
   bootstrap: [AppComponent]

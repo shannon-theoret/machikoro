@@ -14,6 +14,6 @@ export class InventoryService {
   }
 
   getColumns(): string[] {
-    return [ "roll", "symbol", "card", "result", "cost"]
+    return [ "roll", "card", "result", "cost"]
   }
 }

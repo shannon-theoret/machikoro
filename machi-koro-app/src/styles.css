@@ -1,1 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
+h1, h1, h3, h4, h5, h6, h7, h8, th {
+  font-family: lithos;
+}
+
+@font-face {
+  font-family: lithos;
+  src: url('./assets/font/LithosProRegular.ttf') format('truetype')
+}
