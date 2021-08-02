@@ -1,11 +1,10 @@
 <div style="text-align:center">
-  <h1>
+  <h1 class="lithos">
     Machi Koro
   </h1>
-  <h4 *ngIf="started">Code {{game.code}}</h4>
 
-  <div *ngIf="!started"><input #gameCode>
-    <button class="btn btn-light" *ngIf="!started" (click)="startGame(gameCode.value)">Start Game</button>
+  <div *ngIf="!started">
+    <button class="btn btn-light" *ngIf="!started" (click)="startGame()">Start Game</button>
   </div>
   <button class="btn btn-light" *ngIf="started && game.step == 'buy'" (click)="endTurn()">Next</button>
   <button class="btn btn-light" *ngIf="started && (game.step === 'roll' || game.step === 'confirm')" (click)="rollSingleDie()">Roll Single Die</button>
@@ -28,16 +27,13 @@
   <app-dice class="m-3" *ngIf="started" [recentRoll]="game.recentRoll"></app-dice>
 
   <div *ngIf="started" class="row">
-    <div class="col-sm roundedCorner m-3" [ngClass]="{'current-player': game.currentPlayerNumber===1}">
-      <h5>Player 1</h5>
+    <div class="col-sm playerBox p-2 m-3" [ngClass]="{'not-current-player': game.currentPlayerNumber!==1}">
       <app-player *ngIf="started" [player]=game.player1 [prevPlayer]=prevGame.player1></app-player>
     </div>
-    <div class="col-sm roundedCorner p-2 m-3" [ngClass]="{'current-player': game.currentPlayerNumber===2}">
-      <h5>Player 2</h5>
+    <div class="col-sm playerBox p-2 m-3" [ngClass]="{'not-current-player': game.currentPlayerNumber!==2}">
       <app-player *ngIf="started" [player]=game.player2 [prevPlayer]=prevGame.player2></app-player>
     </div>
-    <div class="col-sm roundedCorner p-2 m-3" [ngClass]="{'current-player': game.currentPlayerNumber===3}">
-      <h5>Player 3</h5>
+    <div class="col-sm playerBox p-2 m-3" [ngClass]="{'not-current-player': game.currentPlayerNumber!==3}">
       <app-player *ngIf="started" [player]=game.player3 [prevPlayer]=prevGame.player3></app-player>
     </div>
   </div>
@@ -50,4 +46,6 @@
   </div>
 
   <app-inventory *ngIf="started" [stock]=game.stock></app-inventory>
+
+
 <router-outlet></router-outlet>

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
+import {ModalDismissReasons, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import { HttpClient, HttpResponse, HttpErrorResponse } from "@angular/common/http";
-import {Observable, of, throwError} from 'rxjs';
+import {Observable, of, throwError, timer} from 'rxjs';
 import {catchError, tap} from "rxjs/operators";
 import {CARDS} from "./cards";
 import {Landmark, LANDMARKS} from "./landmarks";
@@ -15,35 +16,36 @@ export class AppComponent {
   ROOT_URL = 'http://localhost:8080/MachiKoro3_war_exploded/machikoroapp'
 
   game: Game = new Game();
+  player: Player;
   prevGame: Game = new Game();
   started: Boolean = false;
   landmarks = LANDMARKS;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private modalService: NgbModal) {
   }
 
-
-  startGame(code) {
-    this.http.get<Game>(this.ROOT_URL + "/game/start/" + code)
+  startGame() {
+    this.http.get<Game>(this.ROOT_URL + "/game/start")
       .pipe(tap(game => {
-        this.game = game
-        this.prevGame = game}))
+      this.game = game
+      this.prevGame = game
+      this.started = true}))
       .subscribe();
-    this.started = true;
+
   }
 
- /* testGame() {
+  testGame() {
     this.http.get<Game>(this.ROOT_URL + "/game/test")
       .pipe(tap(game => {
         this.game = game
         this.prevGame = game}))
       .subscribe();
     this.started = true;
-  }*/
+  }
 
   rollSingleDie() {
     this.prevGame = this.game;
-    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/rollSingle")
+    this.http.get<Game>(this.ROOT_URL + "/game/rollSingle")
       .pipe(tap(game => {
         this.game = game}))
       .subscribe();
@@ -51,21 +53,21 @@ export class AppComponent {
 
   rollTwoDice() {
     this.prevGame = this.game;
-    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/rollDouble")
+    this.http.get<Game>(this.ROOT_URL + "/game/rollDouble")
       .pipe(tap(game => {
         this.game = game}))
       .subscribe();
   }
 
   confirmRoll() {
-    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/confirm")
+    this.http.get<Game>(this.ROOT_URL + "/game/confirm")
       .pipe(tap(game => {
         this.game = game}))
       .subscribe();
   }
 
   steal(playerNumber) {
-    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/steal/" + playerNumber)
+    this.http.get<Game>(this.ROOT_URL + "/game/steal/" + playerNumber)
       .pipe(tap(game => {
         this.game = game}))
       .subscribe();
@@ -73,7 +75,7 @@ export class AppComponent {
 
   purchseCard(card) {
     if (this.game.step !== "buy") {
-      alert("You are not currently in the buy phase of your turn.")
+      alert("You are not currently in the buy phase of your turn.");
       return;
     }
     if (this.game.currentPlayer.coins < card.cost) {
@@ -85,7 +87,7 @@ export class AppComponent {
       return;
     }
     this.prevGame = this.game;
-    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/purchaseCard/" + card.index)
+    this.http.get<Game>(this.ROOT_URL + "/game/purchaseCard/" + card.index)
       .pipe(tap(game => {
         this.game = game}))
       .subscribe();
@@ -101,19 +103,24 @@ export class AppComponent {
       return;
     }
     this.prevGame = this.game;
-    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/purchaseLandmark/" + landmark.id)
+    this.http.get<Game>(this.ROOT_URL + "/game/purchaseLandmark/" + landmark.id)
       .pipe(tap(game => {
-        this.game = game}))
+        this.game = game;
+      }))
       .subscribe();
   }
 
   endTurn() {
     this.prevGame = this.game;
-    this.http.get<Game>(this.ROOT_URL + "/game/" + this.game.code + "/endTurn")
+    this.http.get<Game>(this.ROOT_URL + "/game/endTurn")
       .pipe(tap(game => {
-        this.game = game}))
+        this.game = game; }
+      ))
       .subscribe();
   }
+
+
+
 }
 
 export class Player implements Player{
@@ -125,6 +132,7 @@ export class Player implements Player{
   stock : Stock;
   coins : number;
   hasWon : boolean;
+  playerNumber : number;
 }
 
 
@@ -136,10 +144,15 @@ export interface Player {
   stock : Stock;
   coins : number;
   hasWon : boolean;
+  playerNumber : number;
+}
+
+export interface GamePlayer {
+  game: Game;
+  player: Player;
 }
 
 export interface Game {
-  code : String;
   player1: Player;
   player2: Player;
   player3: Player;
@@ -151,7 +164,6 @@ export interface Game {
 }
 
 export class Game implements Game {
-  code : String;
   player1: Player;
   player2: Player;
   player3: Player;

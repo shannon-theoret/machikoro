@@ -3,11 +3,11 @@ package main;
 import java.util.*;
 
 public class Game {
-    private String code;
     private Player player1;
     private Player player2;
     private Player player3;
     private Player currentPlayer;
+    private Map<String, Player> namedPlayers = new HashMap<>();
     private Step step;
     private List<Integer> recentRoll;
 
@@ -15,9 +15,9 @@ public class Game {
 
 
     public Game() {
-        player1 = new Player();
-        player2 = new Player();
-        player3 = new Player();
+        player1 = new Player(1);
+        player2 = new Player(2);
+        player3 = new Player(3);
         currentPlayer = player1;
         step = Step.ROLL;
         player1.setPlayerToLeft(player2);
@@ -32,14 +32,6 @@ public class Game {
                 gameStock.put(card, 8);
             }
         }
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
     }
 
     public Player getPlayer1() {
@@ -75,16 +67,11 @@ public class Game {
     }
 
     public Integer getCurrentPlayerNumeric() {
-        if (currentPlayer.equals(player1)) {
-            return 1;
-        } else if (currentPlayer.equals(player2)) {
-            return 2;
-        } else {
-            return 3;
-        }
+        return currentPlayer.getPlayerNumber();
     }
 
     public Player getPlayerFromNumber(int number) {
+        //todo: improve method
         switch (number) {
             case 1:
                 return player1;
@@ -95,6 +82,25 @@ public class Game {
         }
         return null;
         //throw exception
+    }
+
+    public Player assignPlayer(String username) {
+        if (!player1.isAssigned()) {
+            player1.setAssigned(true);
+            namedPlayers.put(username, player1);
+            return player1;
+        } else if (!player2.isAssigned()) {
+            player2.setAssigned(true);
+            namedPlayers.put(username, player2);
+            return player2;
+        } else if (!player3.isAssigned()) {
+            player3.setAssigned(true);
+            namedPlayers.put(username, player3);
+            return player3;
+        } else {
+            return null;
+            //throw exception
+        }
     }
 
     public Map<Card, Integer> getGameStock() {

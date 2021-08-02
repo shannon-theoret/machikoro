@@ -1,11 +1,13 @@
 package main;
 
 public class Player {
+    private int playerNumber;
     private boolean hasTrainStation = false;
     private boolean hasShoppingMall = false;
     private boolean hasAmusementPark = false;
     private boolean hasRadioTower = false;
     private PlayerStock stock = new PlayerStock();
+    private boolean assigned = false;
 
     private int coins = 3;
 
@@ -14,6 +16,18 @@ public class Player {
     private boolean rolledDoubles = false;
 
     private boolean hasRolledOnce = false;
+
+    public Player(int playerNumber) {
+        this.playerNumber = playerNumber;
+    }
+
+    public int getPlayerNumber() {
+        return playerNumber;
+    }
+
+    public void setPlayerNumber(int playerNumber) {
+        this.playerNumber = playerNumber;
+    }
 
     public boolean hasRolledOnce() {
         return hasRolledOnce;
@@ -120,5 +134,13 @@ public class Player {
 
     public void setRolledDoubles(boolean rolledDoubles) {
         this.rolledDoubles = rolledDoubles;
+    }
+
+    public boolean isAssigned() {
+        return assigned;
+    }
+
+    public void setAssigned(boolean assigned) {
+        this.assigned = assigned;
     }
 }

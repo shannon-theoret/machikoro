@@ -10,6 +10,7 @@ public class PlayerResponse {
     private boolean hasRadioTower;
     private Map<Integer, Integer> stock;
     private int coins;
+    private int playerNumber;
 
     public PlayerResponse(Player player) {
         this.hasTrainStation = player.hasTrainStation();
@@ -18,6 +19,7 @@ public class PlayerResponse {
         this.hasRadioTower = player.hasRadioTower();
         this.stock = player.getStock().getStockMap();
         this.coins = player.getCoins();
+        this.playerNumber = player.getPlayerNumber();
     }
 
     public boolean isHasTrainStation() {
@@ -68,5 +70,13 @@ public class PlayerResponse {
 
     public void setCoins(int coins) {
         this.coins = coins;
+    }
+
+    public int getPlayerNumber() {
+        return playerNumber;
+    }
+
+    public void setPlayerNumber(int playerNumber) {
+        this.playerNumber = playerNumber;
     }
 }
