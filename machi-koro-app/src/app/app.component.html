@@ -39,10 +39,10 @@
   </div>
 
   <div class="m-3">
-    <button class="btn btn-light" *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasTrainStation" (click)="purchaseLandmark(landmarks[0])">Purchase {{landmarks[0].name}}</button>
-    <button class="btn btn-light" *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasShoppingMall" (click)="purchaseLandmark(landmarks[1])">Purchase {{landmarks[1].name}}</button>
-    <button class="btn btn-light" *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasAmusementPark" (click)="purchaseLandmark(landmarks[2])">Purchase {{landmarks[2].name}}</button>
-    <button class="btn btn-light" *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasRadioTower" (click)="purchaseLandmark(landmarks[3])">Purchase {{landmarks[3].name}}</button>
+      <button *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasTrainStation" class="btn btn-light"  (click)="purchaseLandmark(landmarks[0])" title="{{landmarks[0].description}} Costs {{landmarks[0].cost}}.">Purchase {{landmarks[0].name}}</button>
+      <button *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasShoppingMall" class="btn btn-light" (click)="purchaseLandmark(landmarks[1])" title="{{landmarks[1].description}} Costs {{landmarks[1].cost}}.">Purchase {{landmarks[1].name}}</button>
+      <button *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasAmusementPark" class="btn btn-light" (click)="purchaseLandmark(landmarks[2])" title="{{landmarks[2].description}} Costs {{landmarks[2].cost}}">Purchase {{landmarks[2].name}}</button>
+      <button *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasRadioTower" class="btn btn-light" (click)="purchaseLandmark(landmarks[3])" title="{{landmarks[3].description}} Costs {{landmarks[3].cost}}">Purchase {{landmarks[3].name}}</button>
   </div>
 
   <app-inventory *ngIf="started" [stock]=game.stock></app-inventory>
