@@ -1,18 +1,23 @@
-<div style="text-align:center">
-  <h1 class="lithos">
-    Machi Koro
+<header>
+  <h1 class="somePadding">
+    MACHI KORO
   </h1>
+</header>
 
-  <div *ngIf="!started">
+<div style="text-align:center">
+
+  <div *ngIf="!started" class="somePadding">
     <button class="btn btn-light" *ngIf="!started" (click)="startGame()">Start Game</button>
   </div>
-  <button class="btn btn-light" *ngIf="started && game.step == 'buy'" (click)="endTurn()">Next</button>
-  <button class="btn btn-light" *ngIf="started && (game.step === 'roll' || game.step === 'confirm')" (click)="rollSingleDie()">Roll Single Die</button>
-  <button class="btn btn-light" *ngIf="started && (game.step === 'roll' || game.step === 'confirm') && game.currentPlayer.hasTrainStation" (click)="rollTwoDice()">Roll Two Dice</button>
-  <button class="btn btn-light" *ngIf="started && game.step === 'confirm'" (click)="confirmRoll()">Accept Roll</button>
-  <button class="btn btn-light" *ngIf="started && game.step === 'steal' && game.currentPlayerNumber !== 1" (click)="steal(1)">Steal From Player 1</button>
-  <button class="btn btn-light" *ngIf="started && game.step === 'steal' && game.currentPlayerNumber !== 2" (click)="steal(2)">Steal From Player 2</button>
-  <button class="btn btn-light" *ngIf="started && game.step === 'steal' && game.currentPlayerNumber !== 3" (click)="steal(3)">Steal From Player 3</button>
+  <div class="somePadding">
+    <button class="btn btn-light" *ngIf="started && game.step == 'buy'" (click)="endTurn()">Next</button>
+    <button class="btn btn-light" *ngIf="started && (game.step === 'roll' || game.step === 'confirm')" (click)="rollSingleDie()">Roll Single Die</button>
+    <button class="btn btn-light" *ngIf="started && (game.step === 'roll' || game.step === 'confirm') && game.currentPlayer.hasTrainStation" (click)="rollTwoDice()">Roll Two Dice</button>
+    <button class="btn btn-light" *ngIf="started && game.step === 'confirm'" (click)="confirmRoll()">Accept Roll</button>
+    <button class="btn btn-light" *ngIf="started && game.step === 'steal' && game.currentPlayerNumber !== 1" (click)="steal(1)">Steal From Player 1</button>
+    <button class="btn btn-light" *ngIf="started && game.step === 'steal' && game.currentPlayerNumber !== 2" (click)="steal(2)">Steal From Player 2</button>
+    <button class="btn btn-light" *ngIf="started && game.step === 'steal' && game.currentPlayerNumber !== 3" (click)="steal(3)">Steal From Player 3</button>
+  </div>
 
   <div class="instructions m-3" *ngIf="!started">Click start to begin</div>
   <div class="instructions m-3" *ngIf="started && game.step === 'roll' && !game.currentPlayer.hasTrainStation">Player {{game.currentPlayerNumber}} please roll the die.</div>
@@ -24,7 +29,7 @@
   <div class="instructions m-3" *ngIf="started && game.step === 'won' && game.currentPlayer.hasWon">Player {{game.currentPlayerNumber}} has won the game!</div>
 
 
-  <app-dice class="m-3" *ngIf="started" [recentRoll]="game.recentRoll"></app-dice>
+  <app-dice class="m-3 somePadding" *ngIf="started" [recentRoll]="game.recentRoll"></app-dice>
 
   <div *ngIf="started" class="row">
     <div class="col-sm playerBox p-2 m-3" [ngClass]="{'not-current-player': game.currentPlayerNumber!==1}">
@@ -38,7 +43,7 @@
     </div>
   </div>
 
-  <div class="m-3">
+  <div class="m-3 somePadding">
       <button *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasTrainStation" class="btn btn-light"  (click)="purchaseLandmark(landmarks[0])" title="{{landmarks[0].description}} Costs {{landmarks[0].cost}}.">Purchase {{landmarks[0].name}}</button>
       <button *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasShoppingMall" class="btn btn-light" (click)="purchaseLandmark(landmarks[1])" title="{{landmarks[1].description}} Costs {{landmarks[1].cost}}.">Purchase {{landmarks[1].name}}</button>
       <button *ngIf="started && game.step === 'buy' && !game.currentPlayer.hasAmusementPark" class="btn btn-light" (click)="purchaseLandmark(landmarks[2])" title="{{landmarks[2].description}} Costs {{landmarks[2].cost}}">Purchase {{landmarks[2].name}}</button>
