@@ -91,6 +91,7 @@ export class AppComponent {
       .pipe(tap(game => {
         this.game = game}))
       .subscribe();
+    window.scroll(0,0);
   }
 
   purchaseLandmark(landmark: Landmark) {
