@@ -14,7 +14,7 @@ public class Game {
     private Map<Card, Integer> gameStock = new HashMap<>();
 
 
-    public Game() {
+    public Game() throws GameMechanicException {
         player1 = new Player(1);
         player2 = new Player(2);
         player3 = new Player(3);
@@ -70,8 +70,7 @@ public class Game {
         return currentPlayer.getPlayerNumber();
     }
 
-    public Player getPlayerFromNumber(int number) {
-        //todo: improve method
+    public Player getPlayerFromNumber(int number) throws GameMechanicException {
         switch (number) {
             case 1:
                 return player1;
@@ -80,27 +79,7 @@ public class Game {
             case 3:
                 return player3;
         }
-        return null;
-        //throw exception
-    }
-
-    public Player assignPlayer(String username) {
-        if (!player1.isAssigned()) {
-            player1.setAssigned(true);
-            namedPlayers.put(username, player1);
-            return player1;
-        } else if (!player2.isAssigned()) {
-            player2.setAssigned(true);
-            namedPlayers.put(username, player2);
-            return player2;
-        } else if (!player3.isAssigned()) {
-            player3.setAssigned(true);
-            namedPlayers.put(username, player3);
-            return player3;
-        } else {
-            return null;
-            //throw exception
-        }
+        throw new GameMechanicException("Player number must be 1, 2 or 3.");
     }
 
     public Map<Card, Integer> getGameStock() {
@@ -123,14 +102,23 @@ public class Game {
         return recentRoll;
     }
 
-    public void setRecentRoll(List<Integer> recentRoll) {
+    public void setRecentRoll(List<Integer> recentRoll) throws GameMechanicException {
+        if (recentRoll.size() > 2 ) {
+            throw new GameMechanicException("Only two dice may be thrown.");
+        }
+        for (Integer roll : recentRoll) {
+            if (roll < 1 || roll > 6) {
+                throw new GameMechanicException("Die must be between 1 and 6.");
+            }
+        }
         this.recentRoll = recentRoll;
     }
 
-    public void rollSingle() {
+    public void rollSingle() throws GameMechanicException {
         Integer dieRoll = generateRandomDieRoll();
-        this.recentRoll = new ArrayList<>();
-        this.recentRoll.add(dieRoll);
+        List<Integer> recentSingleRoll = new ArrayList<>();
+        recentSingleRoll.add(dieRoll);
+        setRecentRoll(recentSingleRoll);
         currentPlayer.setRolledDoubles(false);
         if (currentPlayer.hasRadioTower() && !currentPlayer.hasRolledOnce()) {
             currentPlayer.setHasRolledOnce(true);
@@ -143,7 +131,7 @@ public class Game {
         }
     }
 
-    public void rollDouble() {
+    public void rollDouble() throws GameMechanicException {
         Integer dieOne = generateRandomDieRoll();
         Integer dieTwo = generateRandomDieRoll();
         if (dieOne == dieTwo) {
@@ -151,9 +139,10 @@ public class Game {
         } else {
             currentPlayer.setRolledDoubles(false);
         }
-        this.recentRoll = new ArrayList<>();
-        this.recentRoll.add(dieOne);
-        this.recentRoll.add(dieTwo);
+        List<Integer> recentDoubleRoll = new ArrayList<>();
+        recentDoubleRoll.add(dieOne);
+        recentDoubleRoll.add(dieTwo);
+        setRecentRoll(recentDoubleRoll);
         if (currentPlayer.hasRadioTower() && !currentPlayer.hasRolledOnce()) {
             this.step = Step.CONFIRM_ROLL;
             return;
@@ -164,14 +153,14 @@ public class Game {
         }
     }
 
-    public void confirmRoll() {
+    public void confirmRoll() throws GameMechanicException {
         Integer dieOne = 0;
         Integer dieTwo = 0;
-        if (this.recentRoll.size() == 1) {
-            dieOne = this.recentRoll.get(0);
-        } else if (this.recentRoll.size() == 2) {
-            dieOne = this.recentRoll.get(0);
-            dieTwo = this.recentRoll.get(1);
+        if (getRecentRoll().size() == 1) {
+            dieOne = getRecentRoll().get(0);
+        } else if (getRecentRoll().size() == 2) {
+            dieOne = getRecentRoll().get(0);
+            dieTwo = getRecentRoll().get(1);
         }
         if (dieOne == dieTwo) {
             currentPlayer.setRolledDoubles(true);
@@ -184,7 +173,7 @@ public class Game {
         }
     }
 
-    public void handleRoll(int roll) {
+    public void handleRoll(int roll) throws GameMechanicException {
             // handle red cards first
             Player playerToSteal = currentPlayer.getPlayerToLeft();
             while (!playerToSteal.equals(currentPlayer)) {
@@ -263,7 +252,7 @@ public class Game {
 
         }
 
-        public void steal(int playerNumberToStealFrom) {
+        public void steal(int playerNumberToStealFrom) throws GameMechanicException {
             Player playerToStealFrom = getPlayerFromNumber(playerNumberToStealFrom);
             int amountToSteal = 0;
             if (playerToStealFrom.getCoins() < Card.TV_STATION.getAmountGained()) {
@@ -276,17 +265,20 @@ public class Game {
             step = Step.BUY;
         }
 
-        public void purchaseCard(Integer index) {
+        public void purchaseCard(Integer index) throws GameMechanicException {
             Card cardToPurchase = Card.values()[index];
             currentPlayer.getStock().addCard(cardToPurchase);
             currentPlayer.decreaseCoinCount(cardToPurchase.getCost());
             Integer stockQuantity = gameStock.get(cardToPurchase);
             stockQuantity--;
+            if (stockQuantity < 0) {
+                throw new GameMechanicException("Card not in stock.");
+            }
             gameStock.put(cardToPurchase, stockQuantity);
             endTurn();
         }
 
-        public void purchaseLandmark(String id) {
+        public void purchaseLandmark(String id) throws GameMechanicException {
             Landmark landmark = Landmark.getLandmarkFromId(id);
             currentPlayer.purchaseLandmark(landmark);
             endTurn();

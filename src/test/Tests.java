@@ -2,13 +2,15 @@ package test;
 
 import main.Card;
 import main.Game;
+import main.GameMechanicException;
+import main.Player;
 import org.junit.Test;
 
 
 public class Tests {
 
     @Test
-    public void handleRollTest (){
+    public void handleRollTest() throws GameMechanicException{
         Game game = new Game();
         game.getPlayer1().getStock().addCard(Card.RANCH, 3);
         game.getPlayer1().getStock().addCard(Card.CONVENIENCE_STORE, 2);
@@ -68,5 +70,4 @@ public class Tests {
         assert game.getPlayer2().getCoins() == 4;
         assert game.getPlayer3().getCoins() == 12;
     }
-
 }

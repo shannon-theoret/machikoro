@@ -17,7 +17,10 @@ public class Player {
 
     private boolean hasRolledOnce = false;
 
-    public Player(int playerNumber) {
+    public Player(int playerNumber) throws GameMechanicException {
+        if (playerNumber > 3) {
+            throw new GameMechanicException("Cannot have a player number greater than 3.");
+        }
         this.playerNumber = playerNumber;
         stock.addCard(Card.WHEAT, 1);
         stock.addCard(Card.BAKERY, 1);
@@ -95,7 +98,10 @@ public class Player {
         coins += amountToIncreaseBy;
     }
 
-    public void decreaseCoinCount(int amountToDecreaseBy) {
+    public void decreaseCoinCount(int amountToDecreaseBy) throws GameMechanicException {
+        if (coins < amountToDecreaseBy) {
+            throw new GameMechanicException("Cannot have a negative coing balance.");
+        }
         coins -= amountToDecreaseBy;
     }
 
@@ -107,19 +113,32 @@ public class Player {
         this.playerToLeft = playerToLeft;
     }
 
-    public void purchaseLandmark(Landmark landmark) {
+    public void purchaseLandmark(Landmark landmark) throws GameMechanicException {
         decreaseCoinCount(landmark.getCost());
+        String duplicateLandmarkExceptionMessage = "This player already has this landmark.";
         switch (landmark) {
             case TRAIN_STATION:
+                if (hasTrainStation) {
+                    throw new GameMechanicException(duplicateLandmarkExceptionMessage);
+                }
                 hasTrainStation = true;
                 break;
             case SHOPPING_MALL:
+                if (hasShoppingMall) {
+                    throw new GameMechanicException(duplicateLandmarkExceptionMessage);
+                }
                 hasShoppingMall = true;
                 break;
             case AMUSEMENT_PARK:
+                if (hasAmusementPark) {
+                    throw new GameMechanicException(duplicateLandmarkExceptionMessage);
+                }
                 hasAmusementPark = true;
                 break;
             case RADIO_TOWER:
+                if (hasRadioTower) {
+                    throw new GameMechanicException(duplicateLandmarkExceptionMessage);
+                }
                 hasRadioTower = true;
                 break;
         }
@@ -133,11 +152,4 @@ public class Player {
         this.rolledDoubles = rolledDoubles;
     }
 
-    public boolean isAssigned() {
-        return assigned;
-    }
-
-    public void setAssigned(boolean assigned) {
-        this.assigned = assigned;
-    }
 }

@@ -12,7 +12,7 @@ public class GameService {
 
     @GET
     @Path("/start")
-    public Response startGame() {
+    public Response startGame() throws GameMechanicException {
         GameSingleton gameSingleton = GameSingleton.getInstance();
         gameSingleton.setGame(new Game());
         GameResponse gameResponse = new GameResponse(gameSingleton.getGame());
@@ -22,7 +22,7 @@ public class GameService {
 
     @GET
     @Path("/test")
-    public Response testGame() {
+    public Response testGame() throws GameMechanicException {
         GameSingleton gameSingleton = GameSingleton.getInstance();
         gameSingleton.setGame(new Game());
         gameSingleton.getGame().getPlayer1().setCoins(50);
@@ -35,7 +35,7 @@ public class GameService {
 
     @GET
     @Path("/rollSingle")
-    public Response rollSingle() {
+    public Response rollSingle() throws GameMechanicException {
         GameSingleton gameSingleton = GameSingleton.getInstance();
         gameSingleton.getGame().rollSingle();
         GameResponse gameResponse = new GameResponse(gameSingleton.getGame());
@@ -45,7 +45,7 @@ public class GameService {
 
     @GET
     @Path("/rollDouble")
-    public Response rollDouble() {
+    public Response rollDouble() throws GameMechanicException {
         GameSingleton gameSingleton = GameSingleton.getInstance();
         gameSingleton.getGame().rollDouble();
         GameResponse gameResponse = new GameResponse(gameSingleton.getGame());
@@ -55,7 +55,7 @@ public class GameService {
 
     @GET
     @Path("/confirm")
-    public Response confirm() {
+    public Response confirm() throws GameMechanicException {
         GameSingleton gameSingleton = GameSingleton.getInstance();
         gameSingleton.getGame().confirmRoll();
         GameResponse gameResponse = new GameResponse(gameSingleton.getGame());
@@ -65,7 +65,7 @@ public class GameService {
 
     @GET
     @Path("/steal/{player}")
-    public Response confirm(@PathParam("player") Integer playerNumber) {
+    public Response confirm(@PathParam("player") Integer playerNumber) throws GameMechanicException {
         GameSingleton gameSingleton = GameSingleton.getInstance();
         gameSingleton.getGame().steal(playerNumber);
         GameResponse gameResponse = new GameResponse(gameSingleton.getGame());
@@ -75,7 +75,7 @@ public class GameService {
 
     @GET
     @Path("/purchaseCard/{index}")
-    public Response purchaseCard(@PathParam("index") Integer index){
+    public Response purchaseCard(@PathParam("index") Integer index) throws GameMechanicException {
         GameSingleton gameSingleton = GameSingleton.getInstance();
         gameSingleton.getGame().purchaseCard(index);
         GameResponse gameResponse = new GameResponse(gameSingleton.getGame());
@@ -95,7 +95,7 @@ public class GameService {
 
     @GET
     @Path("/purchaseLandmark/{id}")
-    public Response purchaseLandmark(@PathParam("id") String id) {
+    public Response purchaseLandmark(@PathParam("id") String id)  throws GameMechanicException {
         GameSingleton gameSingleton = GameSingleton.getInstance();
         gameSingleton.getGame().purchaseLandmark(id);
         GameResponse gameResponse = new GameResponse((gameSingleton.getGame()));
