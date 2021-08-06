@@ -144,6 +144,7 @@ public class Game {
         recentDoubleRoll.add(dieTwo);
         setRecentRoll(recentDoubleRoll);
         if (currentPlayer.hasRadioTower() && !currentPlayer.hasRolledOnce()) {
+            currentPlayer.setHasRolledOnce(true);
             this.step = Step.CONFIRM_ROLL;
             return;
         }
