@@ -80,6 +80,13 @@ public class PlayerStock {
         return stockMap;
     }
 
+    public Integer getNumberOfCards() {
+        Integer count = 0;
+        for (Entry<Card, Integer> entry: stock.entrySet()) {
+            count += entry.getValue();
+        }
+        return count;
+    }
 
 
 

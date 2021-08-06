@@ -301,4 +301,100 @@ public class Game {
             Random r = new Random();
             return r.nextInt(6) + 1;
         }
+
+        public enum Decision {
+            LANDMARK,
+            CARD,
+            END_TURN;
+        }
+
+        private interface NPC {
+
+            boolean rollSingleDice();
+
+            boolean reroll();
+
+            int choosePlayerToStealFrom();
+
+            Decision makeDecision();
+
+            Landmark chooseLandmark() throws Exception;
+
+            Card chooseCard() throws InvalidMoveException;
+
+        }
+
+        private class SimpleNPC implements NPC {
+
+            @Override
+            public boolean rollSingleDice() {
+                if (currentPlayer.hasTrainStation()) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+            @Override
+            public boolean reroll() {
+                Integer recentRollValue = 0;
+                for (Integer roll: recentRoll) {
+                    recentRollValue += roll;
+                }
+                if (currentPlayer.getStock().getCardsForPlayerRoll(recentRollValue).isEmpty()) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+            @Override
+            public int choosePlayerToStealFrom() {
+                Player nonCurrentPlayerWithMostCoins =
+                        (currentPlayer.getPlayerToLeft().getCoins() > currentPlayer.getPlayerToLeft().getPlayerToLeft().getCoins()?
+                                currentPlayer.getPlayerToLeft() : currentPlayer.getPlayerToLeft().getPlayerToLeft());
+                return nonCurrentPlayerWithMostCoins.getPlayerNumber();
+
+            }
+
+            @Override
+            public Decision makeDecision() {
+                if ((currentPlayer.getCoins() > Landmark.RADIO_TOWER.getCost() && !currentPlayer.hasRadioTower()) ||
+                        (currentPlayer.getCoins() > Landmark.AMUSEMENT_PARK.getCost() && !currentPlayer.hasAmusementPark()) ||
+                        (currentPlayer.getCoins() > Landmark.SHOPPING_MALL.getCost() && !currentPlayer.hasShoppingMall()) ||
+                        (currentPlayer.getCoins() > Landmark.TRAIN_STATION.getCost() && !currentPlayer.hasTrainStation()
+                        && currentPlayer.getStock().getNumberOfCards() > 8)) {
+                    return Decision.LANDMARK;
+                } else {
+                    return Decision.CARD;
+                }
+            }
+
+            @Override
+            public Landmark chooseLandmark() throws InvalidMoveException {
+                if (currentPlayer.getCoins() >= Landmark.RADIO_TOWER.getCost() && !currentPlayer.hasRadioTower()) {
+                    return Landmark.RADIO_TOWER;
+                } else if (currentPlayer.getCoins() >= Landmark.AMUSEMENT_PARK.getCost() && !currentPlayer.hasAmusementPark()) {
+                    return Landmark.AMUSEMENT_PARK;
+                } else if (currentPlayer.getCoins() >= Landmark.SHOPPING_MALL.getCost() && !currentPlayer.hasShoppingMall()) {
+                    return Landmark.SHOPPING_MALL;
+                } else if (currentPlayer.getCoins() >= Landmark.TRAIN_STATION.getCost() && !currentPlayer.hasTrainStation()) {
+                    return Landmark.TRAIN_STATION;
+                }
+                throw new InvalidMoveException("Not enough money to purchase a landmark.");
+            }
+
+            @Override
+            public Card chooseCard() throws InvalidMoveException {
+                List<Card> randomCards = Arrays.asList(Card.values());
+                Collections.shuffle(randomCards);
+                for (Card card : randomCards) {
+                    if (gameStock.get(card) > 0 && currentPlayer.getCoins() >= card.getCost() &&
+                            (card.getCategory() != CardCategory.PURPLE || currentPlayer.getStock().getCardCount(card)==0)) {
+                        return card;
+                    }
+                }
+                throw new InvalidMoveException("Cannot afford to purchase a card.");
+            }
+        }
 }
