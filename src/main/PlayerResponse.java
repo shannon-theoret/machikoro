@@ -11,6 +11,7 @@ public class PlayerResponse {
     private Map<Integer, Integer> stock;
     private int coins;
     private int playerNumber;
+    private boolean npc;
 
     public PlayerResponse(Player player) {
         this.hasTrainStation = player.hasTrainStation();
@@ -20,6 +21,7 @@ public class PlayerResponse {
         this.stock = player.getStock().getStockMap();
         this.coins = player.getCoins();
         this.playerNumber = player.getPlayerNumber();
+        this.npc = player.isNPC();
     }
 
     public boolean isHasTrainStation() {
@@ -79,4 +81,8 @@ public class PlayerResponse {
     public void setPlayerNumber(int playerNumber) {
         this.playerNumber = playerNumber;
     }
+
+    public boolean getNpc() { return npc; }
+
+    public void setNpc(boolean npc) { this.npc = npc; }
 }

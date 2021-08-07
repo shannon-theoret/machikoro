@@ -8,6 +8,7 @@ public class Player {
     private boolean hasRadioTower = false;
     private PlayerStock stock = new PlayerStock();
     private boolean assigned = false;
+    private boolean isNPC = false;
 
     private int coins = 3;
 
@@ -17,11 +18,12 @@ public class Player {
 
     private boolean hasRolledOnce = false;
 
-    public Player(int playerNumber) throws GameMechanicException {
+    public Player(int playerNumber, boolean isNPC) throws GameMechanicException {
         if (playerNumber > 3) {
             throw new GameMechanicException("Cannot have a player number greater than 3.");
         }
         this.playerNumber = playerNumber;
+        this.isNPC = isNPC;
         stock.addCard(Card.WHEAT, 1);
         stock.addCard(Card.BAKERY, 1);
     }
@@ -151,5 +153,15 @@ public class Player {
     public void setRolledDoubles(boolean rolledDoubles) {
         this.rolledDoubles = rolledDoubles;
     }
+
+
+    public boolean isNPC() {
+        return isNPC;
+    }
+
+    public void setNPC(boolean NPC) {
+        isNPC = NPC;
+    }
+
 
 }

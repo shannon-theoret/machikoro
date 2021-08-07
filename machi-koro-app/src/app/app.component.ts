@@ -125,7 +125,14 @@ export class AppComponent {
       .subscribe();
   }
 
-
+  npcMove() {
+    this.prevGame = this.game;
+    this.http.get<Game>(this.ROOT_URL + "/game/npcMove")
+      .pipe(tap(game => {
+        this.game = game;}
+        ))
+      .subscribe();
+  }
 
 }
 
@@ -139,6 +146,7 @@ export class Player implements Player{
   coins : number;
   hasWon : boolean;
   playerNumber : number;
+  npc : boolean;
 }
 
 
@@ -151,11 +159,7 @@ export interface Player {
   coins : number;
   hasWon : boolean;
   playerNumber : number;
-}
-
-export interface GamePlayer {
-  game: Game;
-  player: Player;
+  npc : boolean;
 }
 
 export interface Game {

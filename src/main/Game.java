@@ -10,14 +10,18 @@ public class Game {
     private Map<String, Player> namedPlayers = new HashMap<>();
     private Step step;
     private List<Integer> recentRoll;
+    private Map<Player, NPC> npcs;
 
     private Map<Card, Integer> gameStock = new HashMap<>();
 
 
     public Game() throws GameMechanicException {
-        player1 = new Player(1);
-        player2 = new Player(2);
-        player3 = new Player(3);
+        npcs = new HashMap<>();
+        player1 = new Player(1, false);
+        player2 = new Player(2, true);
+        npcs.put(player2, new SimpleNPC());
+        player3 = new Player(3, true);
+        npcs.put(player3, new SimpleNPC());
         currentPlayer = player1;
         step = Step.ROLL;
         player1.setPlayerToLeft(player2);
@@ -268,19 +272,27 @@ public class Game {
 
         public void purchaseCard(Integer index) throws GameMechanicException {
             Card cardToPurchase = Card.values()[index];
-            currentPlayer.getStock().addCard(cardToPurchase);
-            currentPlayer.decreaseCoinCount(cardToPurchase.getCost());
-            Integer stockQuantity = gameStock.get(cardToPurchase);
+            purchaseCard(cardToPurchase);
+        }
+
+        public void purchaseCard(Card card) throws GameMechanicException {
+            currentPlayer.getStock().addCard(card);
+            currentPlayer.decreaseCoinCount(card.getCost());
+            Integer stockQuantity = gameStock.get(card);
             stockQuantity--;
             if (stockQuantity < 0) {
                 throw new GameMechanicException("Card not in stock.");
             }
-            gameStock.put(cardToPurchase, stockQuantity);
+            gameStock.put(card, stockQuantity);
             endTurn();
         }
 
         public void purchaseLandmark(String id) throws GameMechanicException {
             Landmark landmark = Landmark.getLandmarkFromId(id);
+            purchaseLandmark(landmark);
+        }
+
+        public void purchaseLandmark(Landmark landmark) throws GameMechanicException {
             currentPlayer.purchaseLandmark(landmark);
             endTurn();
         }
@@ -297,6 +309,57 @@ public class Game {
             step = Step.ROLL;
         }
 
+        public void npcMove() throws GameMechanicException, InvalidMoveException {
+            if (!currentPlayer.isNPC()) {
+                throw new InvalidMoveException("Player " + currentPlayer.getPlayerNumber() + " is not an NPC.");
+            }
+            if (!npcs.containsKey(currentPlayer)) {
+                throw new GameMechanicException("No strategy assigned to Player " + currentPlayer.getPlayerNumber());
+            }
+            NPC strategy = npcs.get(currentPlayer);
+
+            switch (step) {
+                case ROLL:
+                    if (strategy.rollSingleDice()) {
+                        rollSingle();
+                    } else {
+                        rollDouble();
+                    }
+                    return;
+                case BUY:
+                    Decision decision = strategy.makeBuyingDecision();
+                    switch (decision) {
+                        case CARD:
+                            purchaseCard(strategy.chooseCard());
+                            return;
+                        case LANDMARK:
+                            purchaseLandmark(strategy.chooseLandmark());
+                            return;
+                        case END_TURN:
+                            endTurn();
+                            return;
+                    }
+                case STEAL:
+                    steal(strategy.choosePlayerToStealFrom());
+                    return;
+                case CONFIRM_ROLL:
+                    if (strategy.reroll()) {
+                        if (strategy.rollSingleDice()) {
+                            rollSingle();
+                        } else {
+                            rollDouble();
+                        }
+                    } else {
+                        confirmRoll();
+                    }
+                    return;
+                case WON:
+                    throw new InvalidMoveException("The game is over.");
+            }
+
+
+        }
+
         private static Integer generateRandomDieRoll() {
             Random r = new Random();
             return r.nextInt(6) + 1;
@@ -308,7 +371,7 @@ public class Game {
             END_TURN;
         }
 
-        private interface NPC {
+        public interface NPC {
 
             boolean rollSingleDice();
 
@@ -316,15 +379,15 @@ public class Game {
 
             int choosePlayerToStealFrom();
 
-            Decision makeDecision();
+            Decision makeBuyingDecision();
 
-            Landmark chooseLandmark() throws Exception;
+            Landmark chooseLandmark() throws InvalidMoveException;
 
             Card chooseCard() throws InvalidMoveException;
 
         }
 
-        private class SimpleNPC implements NPC {
+        public class SimpleNPC implements NPC {
 
             @Override
             public boolean rollSingleDice() {
@@ -358,7 +421,7 @@ public class Game {
             }
 
             @Override
-            public Decision makeDecision() {
+            public Decision makeBuyingDecision() {
                 if ((currentPlayer.getCoins() > Landmark.RADIO_TOWER.getCost() && !currentPlayer.hasRadioTower()) ||
                         (currentPlayer.getCoins() > Landmark.AMUSEMENT_PARK.getCost() && !currentPlayer.hasAmusementPark()) ||
                         (currentPlayer.getCoins() > Landmark.SHOPPING_MALL.getCost() && !currentPlayer.hasShoppingMall()) ||

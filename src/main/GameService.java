@@ -103,4 +103,14 @@ public class GameService {
                 .entity(gameResponse).build();
     }
 
+    @GET
+    @Path("/npcMove")
+    public Response npcMove() throws GameMechanicException, InvalidMoveException {
+        GameSingleton gameSingleton = GameSingleton.getInstance();
+        gameSingleton.getGame().npcMove();
+        GameResponse gameResponse = new GameResponse(gameSingleton.getGame());
+        return Response.status(Response.Status.OK)
+                .entity(gameResponse).build();
+    }
+
 }
