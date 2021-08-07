@@ -10,7 +10,7 @@ public class Game {
     private Map<String, Player> namedPlayers = new HashMap<>();
     private Step step;
     private List<Integer> recentRoll;
-    private Map<Player, NPC> npcs;
+    private Map<Player, Strategy> npcs;
 
     private Map<Card, Integer> gameStock = new HashMap<>();
 
@@ -19,9 +19,9 @@ public class Game {
         npcs = new HashMap<>();
         player1 = new Player(1, false);
         player2 = new Player(2, true);
-        npcs.put(player2, new SimpleNPC());
+        npcs.put(player2, new SimpleStrategy());
         player3 = new Player(3, true);
-        npcs.put(player3, new SimpleNPC());
+        npcs.put(player3, new MostExpensiveStrategy());
         currentPlayer = player1;
         step = Step.ROLL;
         player1.setPlayerToLeft(player2);
@@ -316,7 +316,7 @@ public class Game {
             if (!npcs.containsKey(currentPlayer)) {
                 throw new GameMechanicException("No strategy assigned to Player " + currentPlayer.getPlayerNumber());
             }
-            NPC strategy = npcs.get(currentPlayer);
+            Strategy strategy = npcs.get(currentPlayer);
 
             switch (step) {
                 case ROLL:
@@ -371,7 +371,7 @@ public class Game {
             END_TURN;
         }
 
-        public interface NPC {
+        public interface Strategy {
 
             boolean rollSingleDice();
 
@@ -387,7 +387,7 @@ public class Game {
 
         }
 
-        public class SimpleNPC implements NPC {
+        public class SimpleStrategy implements Strategy {
 
             @Override
             public boolean rollSingleDice() {
@@ -413,21 +413,28 @@ public class Game {
 
             @Override
             public int choosePlayerToStealFrom() {
-                Player nonCurrentPlayerWithMostCoins =
-                        (currentPlayer.getPlayerToLeft().getCoins() > currentPlayer.getPlayerToLeft().getPlayerToLeft().getCoins()?
-                                currentPlayer.getPlayerToLeft() : currentPlayer.getPlayerToLeft().getPlayerToLeft());
-                return nonCurrentPlayerWithMostCoins.getPlayerNumber();
+                Player leftPlayer = currentPlayer.getPlayerToLeft();
+                Player rightPlayer = currentPlayer.getPlayerToLeft().getPlayerToLeft();
 
+                if (leftPlayer.getCoins() < Card.TV_STATION.getAmountGained() || rightPlayer.getCoins() < Card.TV_STATION.getAmountGained()) {
+                    return findNonCurrentPlayerWithMostCoins().getPlayerNumber();
+                } else {
+                    if (countPlayerLandmarks(leftPlayer) == countPlayerLandmarks(rightPlayer)) {
+                        return findNonCurrentPlayerWithMostCoins().getPlayerNumber();
+                    } else {
+                        return (countPlayerLandmarks(leftPlayer) > countPlayerLandmarks(rightPlayer)? leftPlayer.getPlayerNumber() : rightPlayer.getPlayerNumber());
+                    }
+                }
             }
 
             @Override
             public Decision makeBuyingDecision() {
-                if ((currentPlayer.getCoins() > Landmark.RADIO_TOWER.getCost() && !currentPlayer.hasRadioTower()) ||
-                        (currentPlayer.getCoins() > Landmark.AMUSEMENT_PARK.getCost() && !currentPlayer.hasAmusementPark()) ||
-                        (currentPlayer.getCoins() > Landmark.SHOPPING_MALL.getCost() && !currentPlayer.hasShoppingMall()) ||
+                if ( canAffordExpensiveLandmarkNotOwned() ||
                         (currentPlayer.getCoins() > Landmark.TRAIN_STATION.getCost() && !currentPlayer.hasTrainStation()
-                        && currentPlayer.getStock().getNumberOfCards() > 8)) {
+                        && currentPlayer.getStock().getNumberOfCards() > 6)) {
                     return Decision.LANDMARK;
+                } else if (closeToAffordingExpensiveLandmark(4) || closeToWinning()) {
+                    return Decision.END_TURN;
                 } else {
                     return Decision.CARD;
                 }
@@ -452,12 +459,119 @@ public class Game {
                 List<Card> randomCards = Arrays.asList(Card.values());
                 Collections.shuffle(randomCards);
                 for (Card card : randomCards) {
-                    if (gameStock.get(card) > 0 && currentPlayer.getCoins() >= card.getCost() &&
-                            (card.getCategory() != CardCategory.PURPLE || currentPlayer.getStock().getCardCount(card)==0)) {
+                    if (cardPossibleToBuy(card)) {
                         return card;
                     }
                 }
                 throw new InvalidMoveException("Cannot afford to purchase a card.");
             }
+
+            protected Player findNonCurrentPlayerWithMostCoins() {
+                Player nonCurrentPlayerWithMostCoins =
+                        (currentPlayer.getPlayerToLeft().getCoins() > currentPlayer.getPlayerToLeft().getPlayerToLeft().getCoins()?
+                                currentPlayer.getPlayerToLeft() : currentPlayer.getPlayerToLeft().getPlayerToLeft());
+                return nonCurrentPlayerWithMostCoins;
+            }
+
+            protected Integer countPlayerLandmarks(Player player) {
+                Integer count = 0;
+                if (player.hasTrainStation()) {
+                    count += Landmark.TRAIN_STATION.getCost();
+                }
+                if (player.hasShoppingMall()) {
+                    count += Landmark.SHOPPING_MALL.getCost();
+                }
+                if (player.hasAmusementPark()) {
+                    count += Landmark.AMUSEMENT_PARK.getCost();
+                }
+                if (player.hasRadioTower()) {
+                    count += Landmark.RADIO_TOWER.getCost();
+                }
+                return count;
+            }
+
+            protected boolean canAffordExpensiveLandmarkNotOwned() {
+                return (currentPlayer.getCoins() > Landmark.RADIO_TOWER.getCost() && !currentPlayer.hasRadioTower()) ||
+                        (currentPlayer.getCoins() > Landmark.AMUSEMENT_PARK.getCost() && !currentPlayer.hasAmusementPark()) ||
+                        (currentPlayer.getCoins() > Landmark.SHOPPING_MALL.getCost() && !currentPlayer.hasShoppingMall());
+            }
+
+            protected boolean closeToAffordingExpensiveLandmark(Integer margin) {
+                Integer coins = margin + currentPlayer.getCoins();
+                return (coins > Landmark.RADIO_TOWER.getCost() && !currentPlayer.hasRadioTower()) ||
+                        (coins > Landmark.AMUSEMENT_PARK.getCost() && !currentPlayer.hasAmusementPark()) ||
+                        (coins > Landmark.SHOPPING_MALL.getCost() && !currentPlayer.hasShoppingMall());
+            }
+
+            protected boolean closeToWinning() {
+                Integer numberOfLandmarks = 0;
+                if (currentPlayer.hasTrainStation()) {
+                    numberOfLandmarks++;
+                }
+                if (currentPlayer.hasShoppingMall()) {
+                    numberOfLandmarks++;
+                }
+                if (currentPlayer.hasAmusementPark()) {
+                    numberOfLandmarks++;
+                }
+                if (currentPlayer.hasRadioTower()) {
+                    numberOfLandmarks++;
+                }
+                return numberOfLandmarks == 3;
+            }
+
+            protected boolean cardPossibleToBuy(Card card) {
+                return gameStock.get(card) > 0 && currentPlayer.getCoins() >= card.getCost() &&
+                        (card.getCategory() != CardCategory.PURPLE || currentPlayer.getStock().getCardCount(card)==0);
+            }
+
         }
+
+        public class MostExpensiveStrategy extends SimpleStrategy implements Strategy {
+
+            @Override
+            public Card chooseCard() throws InvalidMoveException {
+                boolean firstHalfOfGame = currentPlayer.getStock().getNumberOfCards() < 5;
+                List<Card> randomCards;
+                if (firstHalfOfGame) {
+                    randomCards = new ArrayList<>(Card.firstHalfOfGameCards());
+                } else {
+                    randomCards = Arrays.asList(Card.values());
+                }
+                Collections.shuffle(randomCards);
+                Card mostExpensiveCard = Card.WHEAT;
+                for (Card card : randomCards) {
+                    if (cardPossibleToBuy(card) && card.getCost() > mostExpensiveCard.getCost()) {
+                        mostExpensiveCard = card;
+                    }
+                }
+                if (cardPossibleToBuy(mostExpensiveCard)) {
+                    return mostExpensiveCard;
+                } else {
+                    throw new InvalidMoveException("Cannot afford to purchase a card.");
+                }
+            }
+
+        }
+
+        public class AlwaysOneDieStrategy extends SimpleStrategy implements Strategy {
+
+            @Override
+            public boolean rollSingleDice() {
+                return true;
+            }
+
+            @Override
+            public Decision makeBuyingDecision() {
+                if (canAffordExpensiveLandmarkNotOwned()) {
+                    return Decision.LANDMARK;
+                } else if ((currentPlayer.getCoins() + 5) >= Landmark.RADIO_TOWER.getCost()|| closeToWinning()) {
+                    return Decision.END_TURN;
+                } else {
+                    return Decision.CARD;
+                }
+            }
+        }
+
+
 }

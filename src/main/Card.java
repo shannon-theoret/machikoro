@@ -1,6 +1,7 @@
 package main;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -81,6 +82,12 @@ public enum Card {
 
     public int getCost() {
         return cost;
+    }
+
+    public Set<Integer> getRolls() { return rolls; }
+
+    public static Set<Card> firstHalfOfGameCards() {
+        return EnumSet.range(WHEAT, TV_STATION);
     }
 
 }

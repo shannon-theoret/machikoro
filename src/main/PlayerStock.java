@@ -88,6 +88,19 @@ public class PlayerStock {
         return count;
     }
 
+    public Integer getNumberOfCardsOverSix() {
+        Integer count = 0;
+        for (Entry<Card, Integer> entry: stock.entrySet()) {
+            for (Integer roll : entry.getKey().getRolls()) {
+                if (roll > 6) {
+                    count += entry.getValue();
+                    break;
+                }
+            }
+        }
+        return count;
+    }
+
 
 
 
