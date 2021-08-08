@@ -114,7 +114,7 @@ export const CARDS: any[] =
       symbol: "wheat",
       card: "Apple Orchard",
       result: "Get 3 coins from the bank on anyone's turn.",
-      cost: 6,
+      cost: 3,
       type: "blue"
     },
     {
@@ -123,7 +123,7 @@ export const CARDS: any[] =
       symbol: "fruit",
       card: "Fruit and Vegetable Market",
       result: "Get 2 coins from the bank for each grain establishment you own, on your turn only.",
-      cost: 6,
+      cost: 2,
       type: "blue"
     },
   ]

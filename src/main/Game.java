@@ -221,7 +221,7 @@ public class Game {
             //handle blue cards for other players
             Player otherPlayer = currentPlayer.getPlayerToLeft();
             while(!otherPlayer.equals(currentPlayer)) {
-                releventCards = playerToSteal.getStock().getBlueCardsForRoll(roll);
+                releventCards = otherPlayer.getStock().getBlueCardsForRoll(roll);
                 for (Card card : releventCards) {
                     if (card.isBasic()) {
                         int amountToAdd = card.getAmountGained() * otherPlayer.getStock().getCardCount(card);

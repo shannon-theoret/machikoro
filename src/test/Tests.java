@@ -69,5 +69,10 @@ public class Tests {
         assert game.getPlayer1().getCoins() == 1;
         assert game.getPlayer2().getCoins() == 4;
         assert game.getPlayer3().getCoins() == 12;
+
+        game.handleRoll(2);
+        assert game.getPlayer1().getCoins() == 4;
+        assert game.getPlayer2().getCoins() == 4;
+        assert game.getPlayer3().getCoins() == 14;
     }
 }
