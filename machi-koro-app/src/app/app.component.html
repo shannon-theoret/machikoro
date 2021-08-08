@@ -28,8 +28,7 @@
   <div class="instructions m-3" *ngIf="started && game.step === 'steal'">Player {{game.currentPlayerNumber}} please select a player to steal 5 coins from.</div>
   <div class="instructions m-3" *ngIf="started && game.step === 'won' && game.currentPlayer.hasWon">Player {{game.currentPlayerNumber}} has won the game!</div>
 
-
-  <app-dice class="m-3 somePadding" *ngIf="started" [recentRoll]="game.recentRoll"></app-dice>
+  <app-dice class="m-3 somePadding" *ngIf="started" [currentlyRolling]="currentlyRolling" [recentRoll]="game.recentRoll"></app-dice>
 
   <div *ngIf="started" class="row">
     <div class="col-sm playerBox p-2 m-3" [ngClass]="{'not-current-player': game.currentPlayerNumber!==1}">

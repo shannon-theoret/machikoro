@@ -20,6 +20,7 @@ export class AppComponent {
   prevGame: Game = new Game();
   started: Boolean = false;
   landmarks = LANDMARKS;
+  currentlyRolling: Boolean = false;
 
   constructor(private http: HttpClient, private modalService: NgbModal) {
   }
@@ -44,18 +45,22 @@ export class AppComponent {
   }
 
   rollSingleDie() {
+    this.currentlyRolling = true;
     this.prevGame = this.game;
     this.http.get<Game>(this.ROOT_URL + "/game/rollSingle")
       .pipe(tap(game => {
-        this.game = game}))
+        this.game = game
+        this.currentlyRolling = false}))
       .subscribe();
   }
 
   rollTwoDice() {
+    this.currentlyRolling = true;
     this.prevGame = this.game;
     this.http.get<Game>(this.ROOT_URL + "/game/rollDouble")
       .pipe(tap(game => {
-        this.game = game}))
+        this.game = game
+        this.currentlyRolling = false}))
       .subscribe();
   }
 

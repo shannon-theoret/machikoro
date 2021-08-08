@@ -9,6 +9,7 @@ import {Dice} from "../app.component";
 export class DiceComponent implements OnInit {
 
   @Input() recentRoll: Dice;
+  @Input() currentlyRolling: boolean;
 
   constructor() { }
 
