@@ -19,9 +19,9 @@ public class Game {
         npcs = new HashMap<>();
         player1 = new Player(1, false);
         player2 = new Player(2, true);
-        npcs.put(player2, new SimpleStrategy());
+        npcs.put(player2, new ShoppingStrategy());
         player3 = new Player(3, true);
-        npcs.put(player3, new MostExpensiveStrategy());
+        npcs.put(player3, new CheeseStrategy());
         currentPlayer = player1;
         step = Step.ROLL;
         player1.setPlayerToLeft(player2);
@@ -330,10 +330,18 @@ public class Game {
                     Decision decision = strategy.makeBuyingDecision();
                     switch (decision) {
                         case CARD:
-                            purchaseCard(strategy.chooseCard());
+                            try {
+                                purchaseCard(strategy.chooseCard());
+                            } catch (InvalidMoveException e) {
+                                endTurn();
+                            }
                             return;
                         case LANDMARK:
-                            purchaseLandmark(strategy.chooseLandmark());
+                            try {
+                                purchaseLandmark(strategy.chooseLandmark());
+                            } catch (InvalidMoveException e) {
+                                endTurn();
+                            }
                             return;
                         case END_TURN:
                             endTurn();
@@ -433,7 +441,8 @@ public class Game {
                         (currentPlayer.getCoins() > Landmark.TRAIN_STATION.getCost() && !currentPlayer.hasTrainStation()
                         && currentPlayer.getStock().getNumberOfCards() > 6)) {
                     return Decision.LANDMARK;
-                } else if (closeToAffordingExpensiveLandmark(4) || closeToWinning()) {
+                } else if (closeToAffordingExpensiveLandmark(4) || closeToWinning()
+                    || currentPlayer.getCoins() == 0) {
                     return Decision.END_TURN;
                 } else {
                     return Decision.CARD;
@@ -456,14 +465,7 @@ public class Game {
 
             @Override
             public Card chooseCard() throws InvalidMoveException {
-                List<Card> randomCards = Arrays.asList(Card.values());
-                Collections.shuffle(randomCards);
-                for (Card card : randomCards) {
-                    if (cardPossibleToBuy(card)) {
-                        return card;
-                    }
-                }
-                throw new InvalidMoveException("Cannot afford to purchase a card.");
+                return chooseRandomCard();
             }
 
             protected Player findNonCurrentPlayerWithMostCoins() {
@@ -525,6 +527,17 @@ public class Game {
                         (card.getCategory() != CardCategory.PURPLE || currentPlayer.getStock().getCardCount(card)==0);
             }
 
+            protected Card chooseRandomCard() throws InvalidMoveException {
+                List<Card> randomCards = Arrays.asList(Card.values());
+                Collections.shuffle(randomCards);
+                for (Card card : randomCards) {
+                    if (cardPossibleToBuy(card)) {
+                        return card;
+                    }
+                }
+                throw new InvalidMoveException("Cannot afford to purchase a card.");
+            }
+
         }
 
         public class MostExpensiveStrategy extends SimpleStrategy implements Strategy {
@@ -563,15 +576,97 @@ public class Game {
 
             @Override
             public Decision makeBuyingDecision() {
-                if (canAffordExpensiveLandmarkNotOwned()) {
+                if (canAffordExpensiveLandmarkNotOwned() || closeToWinning()) {
                     return Decision.LANDMARK;
-                } else if ((currentPlayer.getCoins() + 5) >= Landmark.RADIO_TOWER.getCost()|| closeToWinning()) {
+                } else if ((currentPlayer.getCoins() + 5) >= Landmark.RADIO_TOWER.getCost()|| closeToWinning() ||
+                        currentPlayer.getCoins() == 0) {
                     return Decision.END_TURN;
                 } else {
                     return Decision.CARD;
                 }
             }
+
+            @Override
+            public Card chooseCard() throws InvalidMoveException {
+                return chooseCardUnderSix();
+            }
+
+            protected Card chooseCardUnderSix() throws InvalidMoveException{
+                List<Card> randomCards = new ArrayList<>(Card.firstHalfOfGameCards());
+                Collections.shuffle(randomCards);
+                for (Card card : randomCards) {
+                    if (cardPossibleToBuy(card)) {
+                        return card;
+                    }
+                }
+                throw new InvalidMoveException("Cannot afford to purchase a card.");
+            }
         }
 
+        public class ShoppingStrategy extends AlwaysOneDieStrategy implements Strategy {
+
+            @Override
+            public Landmark chooseLandmark() throws InvalidMoveException {
+                if (currentPlayer.getCoins() >= Landmark.SHOPPING_MALL.getCost() && !currentPlayer.hasShoppingMall()) {
+                    return Landmark.SHOPPING_MALL;
+                } else if (currentPlayer.getCoins() >= Landmark.RADIO_TOWER.getCost() && !currentPlayer.hasRadioTower()) {
+                    return Landmark.RADIO_TOWER;
+                } else if (currentPlayer.getCoins() >= Landmark.AMUSEMENT_PARK.getCost() && !currentPlayer.hasAmusementPark()) {
+                    return Landmark.AMUSEMENT_PARK;
+                } else if (currentPlayer.getCoins() >= Landmark.TRAIN_STATION.getCost() && !currentPlayer.hasTrainStation()) {
+                    return Landmark.TRAIN_STATION;
+                }
+                throw new InvalidMoveException("Not enough money to purchase a landmark.");
+            }
+
+            @Override
+            public Card chooseCard() throws InvalidMoveException {
+                if (cardPossibleToBuy(Card.CONVENIENCE_STORE)) {
+                    return Card.CONVENIENCE_STORE;
+                } else if (cardPossibleToBuy(Card.BAKERY)) {
+                    return Card.BAKERY;
+                } else if (cardPossibleToBuy(Card.CAFE)) {
+                    return Card.CAFE;
+                } else if (cardPossibleToBuy(Card.FAMILY_RESTAURANT)) {
+                    return Card.FAMILY_RESTAURANT;
+                } else {
+                    return chooseCardUnderSix();
+                }
+            }
+
+        }
+
+        public class CheeseStrategy extends SimpleStrategy implements Strategy {
+
+            @Override
+            public Decision makeBuyingDecision() {
+                if ( canAffordExpensiveLandmarkNotOwned() ||
+                        (currentPlayer.getCoins() > Landmark.TRAIN_STATION.getCost() && !currentPlayer.hasTrainStation()
+                                && currentPlayer.getStock().getCardCount(Card.CHEESE_FACTORY) > 1)) {
+                    return Decision.LANDMARK;
+                } else if (closeToAffordingExpensiveLandmark(4) || closeToWinning()
+                        || currentPlayer.getCoins() == 0) {
+                    return Decision.END_TURN;
+                } else {
+                    return Decision.CARD;
+                }
+            }
+
+            @Override
+            public Card chooseCard() throws InvalidMoveException {
+                if (currentPlayer.getStock().getCardCount(Card.RANCH) < 3 && cardPossibleToBuy(Card.RANCH)) {
+                    return Card.RANCH;
+                } else if (currentPlayer.getStock().getCardCount(Card.RANCH) >= 3 && cardPossibleToBuy(Card.CHEESE_FACTORY)) {
+                    return Card.CHEESE_FACTORY;
+                } else if (cardPossibleToBuy(Card.RANCH)) {
+                    return Card.RANCH;
+                } else {
+                    return chooseRandomCard();
+                }
+            }
+
+
+
+        }
 
 }

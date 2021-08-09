@@ -29,9 +29,11 @@
   <div class="instructions m-3" *ngIf="started && game.step === 'confirm' && !game.currentPlayer.npc">Player {{game.currentPlayerNumber}} please accept your roll or choose to re-roll.</div>
   <div class="instructions m-3" *ngIf="started && game.step === 'steal' && !game.currentPlayer.npc">Player {{game.currentPlayerNumber}} please select a player to steal 5 coins from.</div>
   <div class="instructions m-3" *ngIf="started && game.step === 'won' && game.currentPlayer.hasWon">Player {{game.currentPlayerNumber}} has won the game!</div>
-  
-  <div class="instructions m-3" *ngIf="started && game.currentPlayer.npc && game.step != 'won'">Click Next to have Player {{game.currentPlayerNumber}} make their move.</div>
 
+  <div class="instructions m-3" *ngIf="started && game.currentPlayer.npc && game.step === 'roll'">Click Next to have Player {{game.currentPlayerNumber}} roll.</div>
+  <div class="instructions m-3" *ngIf="started && game.currentPlayer.npc && game.step === 'buy'">Click Next to have Player {{game.currentPlayerNumber}} make a purchase or end their turn.</div>
+  <div class="instructions m-3" *ngIf="started && game.currentPlayer.npc && game.step === 'confirm'">Click Next to have Player {{game.currentPlayerNumber}} confirm the roll.</div>
+  <div class="instructions m-3" *ngIf="started && game.currentPlayer.npc && game.step === 'steal'">Click Next to have Player {{game.currentPlayerNumber}} steal.</div>
 
   <app-dice class="m-3 somePadding" *ngIf="started" [currentlyRolling]="currentlyRolling" [recentRoll]="game.recentRoll"></app-dice>
 
