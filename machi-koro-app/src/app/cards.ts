@@ -95,7 +95,7 @@ export const CARDS: any[] =
       roll: "9",
       symbol: "gear",
       card: "Mine",
-      result: "Get 3 coins from the bank on anyone's turn.",
+      result: "Get 5 coins from the bank on anyone's turn.",
       cost: 6,
       type: "blue"
     },
@@ -124,6 +124,6 @@ export const CARDS: any[] =
       card: "Fruit and Vegetable Market",
       result: "Get 2 coins from the bank for each grain establishment you own, on your turn only.",
       cost: 2,
-      type: "blue"
+      type: "green"
     },
   ]
