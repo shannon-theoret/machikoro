@@ -1,7 +1,10 @@
 package com.shannontheoret.machikoro.utilities;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Random;
 
+@Component
 public class GameUtilities {
     private static final Random RANDOM = new Random();
 

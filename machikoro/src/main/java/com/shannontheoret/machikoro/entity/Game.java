@@ -39,12 +39,13 @@ public class Game {
     @MapKeyColumn(name="card", nullable = false)
     @Column(name="count", nullable = false)
     @Enumerated(EnumType.STRING)
+    @OrderBy("card ASC")
     private Map<Card, Integer> gameStock = new EnumMap<>(Card.class);
 
     @Column(name = "currentPlayerNumber", nullable = false)
     private Integer currentPlayerNumber = 1;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "game_code", referencedColumnName = "code")
     private Set<Player> players = new HashSet<>();
 

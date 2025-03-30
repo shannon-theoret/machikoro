@@ -55,6 +55,11 @@ public class Player {
     @Column(name="strategy", nullable = true)
     private Strategy strategy;
 
+    public Player() {
+        addCard(Card.WHEAT);
+        addCard(Card.BAKERY);
+    }
+
     public Player(Integer number) throws GameMechanicException {
         if (number > 4) {
             throw new GameMechanicException("Cannot have a player number greater than 4.");
@@ -62,6 +67,14 @@ public class Player {
         this.number = number;
         addCard(Card.WHEAT);
         addCard(Card.BAKERY);
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -213,14 +226,6 @@ public class Player {
             count = stock.get(card);
         }
         return count;
-    }
-
-    public Map<Integer, Integer> getStockMap() {
-        Map<Integer, Integer> stockMap = new HashMap<>();
-        for (Map.Entry<Card, Integer> entry : stock.entrySet()) {
-            stockMap.put(entry.getKey().ordinal(), entry.getValue());
-        }
-        return stockMap;
     }
 
     public Integer getNumberOfCards() {

@@ -24,10 +24,6 @@ public class  GameDao {
 
     @Transactional
     public void save(Game game) {
-        if (game.getCode() == null) {
-            entityManager.persist(game);
-        } else {
-            entityManager.merge(game);
-        }
+        entityManager.merge(game);
     }
 }

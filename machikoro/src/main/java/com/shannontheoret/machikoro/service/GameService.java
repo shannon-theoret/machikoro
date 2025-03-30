@@ -13,10 +13,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class GameService {
@@ -42,21 +39,21 @@ public class GameService {
     }
 
     @Transactional
-    public Game newGame(Integer numberOfPlayers, Integer numberOfNPCs) throws GameMechanicException {
+    public Game newGame(Integer numberOfPlayers) throws GameMechanicException {
         Game game = new Game();
         game.setCode(gameUtilities.generateCode());
         if (numberOfPlayers < GameRules.MIN_PLAYERS || numberOfPlayers > GameRules.MAX_PLAYERS) {
             throw new IllegalArgumentException("Number of players must be between " + GameRules.MIN_PLAYERS + " and " + GameRules.MAX_PLAYERS);
         }
-        if (numberOfNPCs >= numberOfPlayers) {
-            throw new IllegalArgumentException("Number of NPCs must be less than the number of players");
-        }
-        Set<Player> players = game.getPlayers();
+        Set<Player> players = new HashSet<>();
         for (int i = 1; i <= numberOfPlayers; i++) {
-            Player player = new Player(i);
+            Player player = new Player();
+            player.setNumber(i);
             player.setName("Player " + i);
+            playerDao.save(player);
             players.add(player);
         }
+        game.setPlayers(players);
         Map<Card, Integer> gameStock = game.getGameStock();
         for (Card card : Card.values()) {
             if (card.getCategory() == CardCategory.PURPLE) {
@@ -72,19 +69,22 @@ public class GameService {
     }
 
     @Transactional
-    public Game namePlayer(String code, Integer number, String name) throws GameCodeNotFoundException, GameMechanicException, InvalidMoveException {
+    public Game setupPlayer(String code, Integer number, String name, Boolean isNPC) throws GameCodeNotFoundException, GameMechanicException, InvalidMoveException {
         Game game = findByCode(code);
         if (game.getStep() != Step.SETUP) {
             throw new InvalidMoveException("Game has already begun");
         }
         Player player = game.findPlayerByNumber(number);
-        player.setName(name);
+        if (name.length() > 0) {
+            player.setName(name);
+        }
+        player.setNpc(isNPC);
         save(game);
         return game;
     }
 
     @Transactional
-    public Game beginGame(String code) throws GameCodeNotFoundException, InvalidMoveException {
+    public Game beginGame(String code) throws GameCodeNotFoundException, InvalidMoveException, GameMechanicException {
         Game game = findByCode(code);
         if (game.getStep() != Step.SETUP) {
             throw new InvalidMoveException("Game has already begun");
@@ -198,9 +198,20 @@ public class GameService {
     }
 
     @Transactional
+    public Game testStuff(String code) throws GameMechanicException, GameCodeNotFoundException, InvalidMoveException {
+        Game game = findByCode(code);
+        game.setDie1(3);
+        game.setDie2(1);
+        save(game);
+        return game;
+    }
+
+    @Transactional
     private void save(Game game) {
         for (Player player : game.getPlayers()) {
-            playerDao.save(player);
+            if (player.getId() == null) {
+                playerDao.save(player);
+            }
         }
         gameDao.save(game);
     }
