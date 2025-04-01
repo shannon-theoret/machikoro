@@ -2,23 +2,14 @@
 import Header from './components/Header.vue'
 import Game from './components/Game.vue'
 import api from '@/api/axiosInstance';
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import NewGame from './components/NewGame.vue';
 
 const game = ref({});
 const toStart = ref(false);
 const randomMessage = ref("Welcome to the game!");
 const error = ref("");
-
-const gameCode = computed({
-  get: () => game.value?.code || "",
-  set: (value) => {
-    if (!game.value) {
-      game.value = {};
-    }
-    game.value.code = value;
-  }
-});
+const gameCode = ref("");
 
 const startGame = () => {
   game.value = {};
@@ -36,7 +27,8 @@ const beginGame = async (players) => {
     playerName: player.name,
     isNPC: player.isNPC
   }));
-  makeApiCall('/newGame', playerData, null);
+  await makeApiCall('/newGame', playerData, null);
+  gameCode.value = game.value.code;
   toStart.value = false;
 }
 
@@ -47,6 +39,9 @@ const openGame = async (code) => {
         params: { gameCode: code }
       });
       game.value = response.data;
+      gameCode.value = code;
+      sessionStorage.setItem("gameCode", gameCode.value);
+      toStart.value = false;
       error.value = "";
     } catch (err) {
       error.value = err.response?.data?.message || "An unknown error occurred.";
@@ -56,15 +51,25 @@ const openGame = async (code) => {
   }
 }
 
-const makeApiCall = async (url, data) => {
+const makeApiCall = async (url, data, params) => {
     try {
-        const response = await api.post(url, data);
+        const response = await api.post(url, data, { params });
         game.value = response.data;
         error.value = "";
     } catch (err) {
         error.value = err.response?.data?.message || "An unknown error occurred.";
     }
 };
+
+onMounted(() => {
+  const storedGameCode = sessionStorage.getItem("gameCode");
+  console.log("Stored game code:", storedGameCode);
+  if (storedGameCode) {
+    gameCode.value = storedGameCode;
+    openGame(storedGameCode); // Automatically open game if gameCode is stored
+  }
+});
+
 </script>
 
 <template>
