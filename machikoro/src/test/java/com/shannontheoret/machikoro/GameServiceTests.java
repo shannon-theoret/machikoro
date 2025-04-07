@@ -122,12 +122,12 @@ public class GameServiceTests {
 
         verifySaves(game, 1);
     }
-/*
+
     @Test
     public void beginGame_valid() throws GameMechanicException, GameCodeNotFoundException, InvalidMoveException {
         setupMocks();
 
-        Game game = gameService.newGame(3, 0);
+        Game game = gameService.newGame(3);
         
         when(gameDao.findByCode("testCode")).thenReturn(game);
 
@@ -143,7 +143,7 @@ public class GameServiceTests {
     public void beginGame_invalid() throws GameMechanicException {
         setupMocks();
 
-        Game game = gameService.newGame(3, 0);
+        Game game = gameService.newGame(3);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);
 
@@ -153,7 +153,7 @@ public class GameServiceTests {
 
         verifySaves(game, 1);
     }
-*/
+
     @ParameterizedTest
     @ValueSource(strings = {"RANCH", "CAFE", "CONVENIENCE_STORE", "FOREST", "CHEESE_FACTORY", "FURNITURE_FACTORY", "MINE", "FAMILY_RESTAURANT", "APPLE_ORCHARD", "FRUIT_AND_VEGETABLE_GARDEN"})
     public void purchaseCard_firstPurchase_valid(Card card) throws GameMechanicException, InvalidMoveException, GameCodeNotFoundException {
