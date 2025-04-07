@@ -98,7 +98,7 @@ public class GameService {
     @Transactional
     public Game roll(String code, Boolean rollTwo) throws GameMechanicException, GameCodeNotFoundException, InvalidMoveException {
         Game game = findByCode(code);
-        if (game.getStep() != Step.ROLL) {
+        if (game.getStep() != Step.ROLL && game.getStep() != Step.CONFIRM_ROLL) {
             throw new InvalidMoveException("Cannot roll dice at this time.");
         }
         Player currentPlayer = game.findCurrentPlayer();
@@ -192,6 +192,17 @@ public class GameService {
             throw new InvalidMoveException("Player cannot purchase the same landmark twice.");
         }
         currentPlayer.purchaseLandmark(landmark);
+        endTurn(game);
+        save(game);
+        return game;
+    }
+
+    @Transactional
+    public Game completeTurn(String code) throws GameMechanicException, GameCodeNotFoundException, InvalidMoveException {
+        Game game = findByCode(code);
+        if (game.getStep() != Step.BUY) {
+            throw new InvalidMoveException("Cannot complete turn at this time.");
+        }
         endTurn(game);
         save(game);
         return game;

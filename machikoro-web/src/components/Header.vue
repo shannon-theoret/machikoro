@@ -1,5 +1,5 @@
 <script setup>
-import { ref} from 'vue'
+import { ref, defineEmits} from 'vue'
 
 const inputCode = ref("");
 
@@ -11,6 +11,16 @@ defineProps({
         required: true
     }
 });
+
+const openGame = () => {
+  emit('open-game', inputCode.value);
+  inputCode.value = '';
+};
+
+const newGame = () => {
+  emit('new-game');
+  inputCode.value = '';
+};
 
 
 </script>
@@ -24,16 +34,16 @@ defineProps({
         <div class="navbar-menu">
             <div class="navbar-start">
             <div class="navbar-item">
-                <button class="button" @click="$emit(`start-game`)">New Game</button>
+                <button class="button" @click="newGame">New Game</button>
                 <input class="input" type="text" placeholder="enter game code" v-model="inputCode"></input>
             </div>
             <div class="navbar-item">
-                <button class="button" @click="$emit('open-game', inputCode)">Open Game</button>
+                <button class="button" @click="openGame">Open Game</button>
             </div>  
             </div>
             <div class="navbar-end">
                 <div class="navbar-item">
-                    <p class="title is-4">GAME CODE: {{gameCode}} </p>
+                    <p v-if="gameCode" class="title is-4">GAME CODE: {{gameCode}} </p>
                 </div>
             </div>    
         </div>

@@ -1,20 +1,21 @@
 <script setup>
-import wheatImg from '../assets/Wheat_Field.svg';
-import ranchImg from '../assets/Ranch.svg';
-import bakeryImg from '../assets/Bakery.svg';
-import cafeImg from '../assets/Cafe.svg';
-import convenienceStoreImg from '../assets/Convenience_Store.svg';
-import forestImg from '../assets/Forest.svg';
-import stadiumImg from '../assets/Stadium.svg';
-import tvStationImg from '../assets/TV_Station.svg';
-import cheeseFactoryImg from '../assets/Cheese_Factory.svg';
-import furnitureFactoryImg from '../assets/Furniture_Factory.svg';
-import mineImg from '../assets/Mine.svg';
-import familyRestaurantImg from '../assets/Family_Restaurant.svg';
-import appleOrchardImg from '../assets/Apple_Orchard.svg';
-import fruitAndVegetableGardenImg from '../assets/Fruit_and_Vegetable_Market.svg';
+import wheatImg from '../assets/Wheat_Field.png';
+import ranchImg from '../assets/Ranch.png';
+import bakeryImg from '../assets/Bakery.png';
+import cafeImg from '../assets/Cafe.png';
+import convenienceStoreImg from '../assets/Convenience_Store.png';
+import forestImg from '../assets/Forest.png';
+import stadiumImg from '../assets/Stadium.png';
+import tvStationImg from '../assets/TV_Station.png';
+import cheeseFactoryImg from '../assets/Cheese_Factory.png';
+import furnitureFactoryImg from '../assets/Furniture_Factory.png';
+import mineImg from '../assets/Mine.png';
+import familyRestaurantImg from '../assets/Family_Restaurant.png';
+import appleOrchardImg from '../assets/Apple_Orchard.png';
+import fruitAndVegetableGardenImg from '../assets/Fruit_and_Vegetable_Market.png';
+import { defineProps, defineEmits } from 'vue';
 
-defineProps({
+const props = defineProps({
     cardName: {
       type: String,
       required: true
@@ -22,31 +23,41 @@ defineProps({
     quantity: {
       type: Number,
       required: true
+    },
+    selected: {
+      type: Boolean,
+      default: false
     }
   });
 
+const emit = defineEmits(['click']);
+
 const cardImageMap = {
-    "WHEAT": wheatImg,
-    "RANCH": ranchImg,
-    "BAKERY": bakeryImg,
-    "CAFE": cafeImg,
-    "CONVENIENCE_STORE": convenienceStoreImg,
-    "FOREST": forestImg,
-    "STADIUM": stadiumImg,
-    "TV_STATION": tvStationImg,
-    "CHEESE_FACTORY": cheeseFactoryImg,
-    "FURNITURE_FACTORY": furnitureFactoryImg,
-    "MINE": mineImg,
-    "FAMILY_RESTAURANT": familyRestaurantImg,
-    "APPLE_ORCHARD": appleOrchardImg,
-    "FRUIT_AND_VEGETABLE_GARDEN": fruitAndVegetableGardenImg,
+  "WHEAT": { image: wheatImg },
+  "RANCH": { image: ranchImg },
+  "BAKERY": { image: bakeryImg },
+  "CAFE": { image: cafeImg },
+  "CONVENIENCE_STORE": { image: convenienceStoreImg },
+  "FOREST": { image: forestImg },
+  "STADIUM": { image: stadiumImg },
+  "TV_STATION": { image: tvStationImg },
+  "CHEESE_FACTORY": { image: cheeseFactoryImg },
+  "FURNITURE_FACTORY": { image: furnitureFactoryImg },
+  "MINE": { image: mineImg },
+  "FAMILY_RESTAURANT": { image: familyRestaurantImg },
+  "APPLE_ORCHARD": { image: appleOrchardImg, cardTitle: "Apple Orchard", cardDescription: "Gain 3 coins from the bank, on anyone's turn." },
+  "FRUIT_AND_VEGETABLE_GARDEN": { image: fruitAndVegetableGardenImg },
+  };
+
+const handleClick = () => {
+    emit('click', props.cardName);
   };
 
   </script>
 
   <template>
-    <div class="image-container">
-      <img :src="cardImageMap[cardName]" alt="Card Image" class="card-image" />
+    <div class="image-container" @click="handleClick">
+      <img :src="cardImageMap[cardName].image" alt="Card Image" class="card-image" :class="{ highlighted: selected }" />
       <span class="badge">{{ quantity }}</span>
     </div>
   </template>

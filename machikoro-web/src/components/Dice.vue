@@ -18,7 +18,7 @@ const die2Src = computed(() => props.die2 > 0 ? new URL(`../assets/dice-${props.
 </script>
 
 <template>
-    <div class="dice-container">
+    <div class="dice-container box">
         <img v-if="die1 > 0" :src="die1Src" class="die" />
         <img v-if="die2 > 0" :src="die2Src" class="die" />
     </div>

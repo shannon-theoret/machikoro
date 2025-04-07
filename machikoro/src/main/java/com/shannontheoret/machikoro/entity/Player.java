@@ -44,6 +44,7 @@ public class Player {
     @MapKeyColumn(name="card", nullable = false)
     @Column(name="count", nullable = false)
     @Enumerated(EnumType.STRING)
+    @OrderBy("card ASC")
     private Map<Card, Integer> stock = new EnumMap<>(Card.class);
 
     @Column(name="coins", nullable = false)

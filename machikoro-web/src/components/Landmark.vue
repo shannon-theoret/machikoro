@@ -11,14 +11,20 @@ defineProps({
     constructed: {
         type: Boolean,
         default: false
+    },
+    selected: {
+        type: Boolean,
+        default: false
     }
 });
+
+const emit = defineEmits(['click']);
 
 </script>
 
 <template>
-    <div class="landmark-container">
-        <img :src="landmarkMap[landmark]" class="landmark" :class="{ 'notConstructed': !constructed }" />
+    <div class="landmark-container"  @click="$emit('click', landmark)" :class="{'highlighted': selected}">
+        <img :src="landmarkMap[landmark]" class="landmark" :class="{ 'notConstructed': !constructed}"/>
         <img v-if="!constructed" :src="constructImg" class="construct" />
     </div>
 </template>

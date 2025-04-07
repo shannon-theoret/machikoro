@@ -1,5 +1,25 @@
 @import "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css";
 
+.machikoro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 50px;
+}
+
+.new-game {
+  display: flex;
+  gap: 30px;
+  flex-direction: column;
+}
+
+.player-input {
+  display: flex;
+  flex-direction: column;
+}
+
 .game {
   display: flex;
   align-items: center;
@@ -7,6 +27,8 @@
   flex-direction: column;
   width: 100%;
 }
+
+
 .navbar {
   background-color: #38AFCF;
   padding: 20px;
@@ -18,10 +40,21 @@
   color: #fff;
 }
 
-.card-image {
+.arrow-icon {
+  margin-left: 15px;
+  cursor: pointer;
+}
+
+.gameStock .card-image {
     height: auto;
-    width: 140px;
+    width: 160px;
     padding: 5px;
+}
+
+.player .card-image {
+  height: auto;
+  width: 120px;
+  padding: 5px;
 }
 
 .landmark-container {
@@ -49,14 +82,27 @@
   position: absolute
 }
 
+.top-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin: 20px;
+}
+
 .gameStock {
-    width: 980px;
+    width: 1200px;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    margin: 20px;
+    margin: 15px;
     flex-wrap: wrap;
+}
+
+.game-stock-container {
+  border: 3px solid #7CB8DF;
+  width: 1250px;
 }
 
 .playerLandmarks {
@@ -76,7 +122,8 @@
   position: absolute;
   top: 3px; /* Adjust the distance from the top */
   right: 3px; /* Adjust the distance from the right */
-  background-color: bisque;
+  background-color: black;
+  color: white;
   font-size: 14px;
   font-weight: bold;
   width: 24px;
@@ -98,14 +145,14 @@
 }
 
 .player {
-  border: #38AFCF solid 2px;
+  border: #7CB8DF solid 3px;
   padding: 10px;
   margin: 15px;
   border-radius: 20px;
 }
 
 .player.isCurrentPlayer {
-  border: red solid 2px;
+  border: #9C213A solid 4px;
 }
 
 .coin-container {
@@ -139,4 +186,32 @@
 .die {
   width: 70px;
   height: auto;
+  padding: 5px;
+}
+
+.highlighted {
+  border: 2px solid #9C213A;
+}
+
+.player-moves {
+  border: 3px solid #A371B7;
+  width: 1000px;
+  height: 220px;
+  margin: 15px;
+}
+
+.dice-container {
+  border: 2px solid #88B86E;
+  height: 220px;
+  width: 220px;
+  margin: 15px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.instructions {
+  margin: 25px;
 }

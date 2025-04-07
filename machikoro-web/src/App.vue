@@ -7,11 +7,10 @@ import NewGame from './components/NewGame.vue';
 
 const game = ref({});
 const toStart = ref(false);
-const randomMessage = ref("Welcome to the game!");
 const error = ref("");
 const gameCode = ref("");
 
-const startGame = () => {
+const newGame = () => {
   game.value = {};
   toStart.value = true;
 }
@@ -51,6 +50,62 @@ const openGame = async (code) => {
   }
 }
 
+const roll = async () => {
+  try {
+    await makeApiCall('/roll', null, { gameCode: gameCode.value });
+  } catch (err) {
+    error.value = err.response?.data?.message || "An unknown error occurred.";
+  }
+}
+
+const rollTwoDice = async () => {
+  try {
+    await makeApiCall('/rollTwoDice', null, { gameCode: gameCode.value });
+  } catch (err) {
+    error.value = err.response?.data?.message || "An unknown error occurred.";
+  }
+}
+
+const confirmRoll = async () => {
+  try {
+    await makeApiCall('/confirmRoll', null, { gameCode: gameCode.value });
+  } catch (err) {
+    error.value = err.response?.data?.message || "An unknown error occurred.";
+  }
+}
+
+const steal = async (playerToStealFrom) => {
+  try {
+    await makeApiCall('/steal', null, { gameCode: gameCode.value, playerNumber: playerToStealFrom });
+  } catch (err) {
+    error.value = err.response?.data?.message || "An unknown error occurred.";
+  }
+}
+
+const purchaseCard = async (cardName) => {
+  try {
+    await makeApiCall('/purchaseCard', null, { gameCode: gameCode.value, card: cardName });
+  } catch (err) {
+    error.value = err.response?.data?.message || "An unknown error occurred.";
+  }
+}
+
+const purchaseLandmark = async (landmarkName) => {
+  try {
+    await makeApiCall('/purchaseLandmark', null, { gameCode: gameCode.value, landmark: landmarkName });
+  } catch (err) {
+    error.value = err.response?.data?.message || "An unknown error occurred.";
+  }
+};
+
+const completeTurn = async () => {
+  try {
+    await makeApiCall('/completeTurn', null, { gameCode: gameCode.value });
+  } catch (err) {
+    error.value = err.response?.data?.message || "An unknown error occurred.";
+  }
+}
+
 const makeApiCall = async (url, data, params) => {
     try {
         const response = await api.post(url, data, { params });
@@ -61,9 +116,12 @@ const makeApiCall = async (url, data, params) => {
     }
 };
 
+const updateError = (message) => {
+  error.value = message;
+};
+
 onMounted(() => {
   const storedGameCode = sessionStorage.getItem("gameCode");
-  console.log("Stored game code:", storedGameCode);
   if (storedGameCode) {
     gameCode.value = storedGameCode;
     openGame(storedGameCode); // Automatically open game if gameCode is stored
@@ -73,8 +131,21 @@ onMounted(() => {
 </script>
 
 <template>
-  <Header :gameCode="gameCode" @start-game="startGame" @open-game="openGame"/>
-  {{ error }}
-  <NewGame v-if="toStart" @begin-game="beginGame"></NewGame>
-  <Game v-if="game.step && game.step !== 'SETUP'" :game="game"></Game>
+  <Header :gameCode="gameCode" @new-game="newGame" @open-game="openGame"/>
+  <div class="machikoro">
+    {{ error }}
+    <NewGame v-if="toStart" @begin-game="beginGame"></NewGame>
+    <Game 
+      v-if="game.step && game.step !== 'SETUP'" 
+      :game="game" 
+      @roll="roll" 
+      @roll-two-dice="rollTwoDice" 
+      @confirm-roll="confirmRoll" 
+      @steal="steal" 
+      @purchase-card="purchaseCard" 
+      @purchase-landmark="purchaseLandmark" 
+      @complete-turn="completeTurn"
+      @error="updateError">
+    </Game>
+  </div>
 </template>
