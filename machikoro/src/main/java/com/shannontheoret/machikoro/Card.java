@@ -16,7 +16,7 @@ public enum Card {
     TV_STATION(6, true, false, false, CardCategory.PURPLE, false, 5, 7),
     CHEESE_FACTORY(7, true, false, false, CardCategory.OTHER, false, 3, 5),
     FURNITURE_FACTORY(8, true, false, false, CardCategory.OTHER, false, 3, 3),
-    MINE(9, true, true, false, CardCategory.GEAR, true, 3, 6),
+    MINE(9, true, true, false, CardCategory.GEAR, true, 5, 6),
     FAMILY_RESTAURANT(new HashSet<>(Arrays.asList(9, 10)), false, false, true, CardCategory.CUP, true, 2, 3),
     APPLE_ORCHARD(10, true, true, false, CardCategory.GRAIN, true, 3, 3),
     FRUIT_AND_VEGETABLE_GARDEN(new HashSet<>(Arrays.asList(11, 12)), true, false, false, CardCategory.OTHER, false, 2, 2);

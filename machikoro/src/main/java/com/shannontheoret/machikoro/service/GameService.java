@@ -50,7 +50,6 @@ public class GameService {
             Player player = new Player();
             player.setNumber(i);
             player.setName("Player " + i);
-            playerDao.save(player);
             players.add(player);
         }
         game.setPlayers(players);
@@ -211,8 +210,40 @@ public class GameService {
     @Transactional
     public Game testStuff(String code) throws GameMechanicException, GameCodeNotFoundException, InvalidMoveException {
         Game game = findByCode(code);
-        game.setDie1(3);
-        game.setDie2(1);
+
+        game.setStep(Step.ROLL);
+
+        Player player1 = game.findPlayerByNumber(1);
+        player1.getStock().putAll(Map.of(
+                Card.RANCH, 3,
+                Card.CONVENIENCE_STORE, 2,
+                Card.FOREST, 1,
+                Card.CHEESE_FACTORY, 4,
+                Card.CAFE, 2,
+                Card.MINE, 2,
+                Card.FRUIT_AND_VEGETABLE_GARDEN, 5
+        )); //also includes 1 wheat field and 1 bakery
+
+        Player player2 = game.findPlayerByNumber(2);
+        player2.getStock().putAll(Map.of(
+                Card.CONVENIENCE_STORE, 2,
+                Card.FOREST, 3,
+                Card.APPLE_ORCHARD, 1,
+                Card.CAFE, 1
+        )); //also includes 1 wheat field and 1 bakery
+
+        Player player3 = game.findPlayerByNumber(3);
+        player3.getStock().putAll(Map.of(
+                Card.WHEAT, 2,
+                Card.CAFE, 1,
+                Card.STADIUM, 1
+        ));
+
+        player3.getLandmarks().add(Landmark.SHOPPING_MALL);
+
+        player1.setCoins(5);
+        player2.setCoins(0);
+        player3.setCoins(3);
         save(game);
         return game;
     }
@@ -238,7 +269,7 @@ public class GameService {
         Integer roll = game.getDieTotal();
         // handle red cards first (other players steal from current player)
         Player currentPlayer = game.findCurrentPlayer();
-        Player playerToSteal = game.findNextPlayer(game.getCurrentPlayerNumber());
+        Player playerToSteal = game.findPreviousPlayer(game.getCurrentPlayerNumber());
         while (playerToSteal.getNumber() != game.getCurrentPlayerNumber()) {
             Set<Card> releventCards = playerToSteal.getRedCardsForRoll(roll);
             for (Card card: releventCards) {
@@ -255,7 +286,7 @@ public class GameService {
                     playerToSteal.increaseCoinCount(amountToSteal);
                 }
             }
-            playerToSteal = game.findNextPlayer(playerToSteal.getNumber());
+            playerToSteal = game.findPreviousPlayer(playerToSteal.getNumber());
         }
         // handle green and blue cards for current character
         Set<Card> releventCards = currentPlayer.getCardsForPlayerRoll(roll);

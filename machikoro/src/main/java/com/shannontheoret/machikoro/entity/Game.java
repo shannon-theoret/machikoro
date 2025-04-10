@@ -142,6 +142,10 @@ public class Game {
         return findPlayerByNumber(findNextPlayerNumber(playerNumber));
     }
 
+    public Player findPreviousPlayer(Integer playerNumber) throws GameMechanicException {
+        return findPlayerByNumber(findPreviousPlayerNumber(playerNumber));
+    }
+
     public Player findPlayerByNumber(Integer playerNumber) throws GameMechanicException {
         for (Player player : players) {
             if (player.getNumber() == playerNumber) {
@@ -157,6 +161,14 @@ public class Game {
             nextPlayerNumber = 1;
         }
         return nextPlayerNumber;
+    }
+
+    private Integer findPreviousPlayerNumber(Integer playerNumber) throws GameMechanicException {
+        Integer previousPlayerNumber = playerNumber -1;
+        if (previousPlayerNumber < 1) {
+            previousPlayerNumber = players.size();
+        }
+        return previousPlayerNumber;
     }
 
     private void confirmValidDieRoll(Integer dieNumber) throws GameMechanicException {
