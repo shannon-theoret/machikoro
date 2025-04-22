@@ -63,8 +63,8 @@ public class GameServiceTests {
                 assertFalse(player.hasLandmark(landmark), "Player should not have landmark " + landmark);
             }
             assertEquals(3, player.getCoins(), "Player should have 3 coins.");
-            assertEquals(1, player.getCardCount(Card.WHEAT), "Player should have 1 wheat card.");
-            assertEquals(1, player.getCardCount(Card.BAKERY), "Player should have 1 bakery card.");
+            assertEquals(1, player.getStock().getOrDefault(Card.WHEAT, 0), "Player should have 1 wheat card.");
+            assertEquals(1, player.getStock().getOrDefault(Card.BAKERY, 0), "Player should have 1 bakery card.");
         }
 
         verifySaves(game, 1);
@@ -91,8 +91,8 @@ public class GameServiceTests {
 
         gameService.setupPlayer("testCode", 1, "Sarah", false);
 
-        assertEquals("Sarah", game.findPlayerByNumber(1).getName(), "Player 1 should be named 'Sarah'");
-        assertEquals("Player 2", game.findPlayerByNumber(2).getName(), "Player 2 should be named 'Player 2'");
+        assertEquals("Sarah", game.getPlayerByNumber(1).getName(), "Player 1 should be named 'Sarah'");
+        assertEquals("Player 2", game.getPlayerByNumber(2).getName(), "Player 2 should be named 'Player 2'");
         assertEquals(Step.SETUP, game.getStep(), "Game step should be SETUP");
 
         verifySaves(game, 2);
@@ -168,7 +168,7 @@ public class GameServiceTests {
 
         game.setStep(Step.ROLL);
 
-        Player player1 = game.findPlayerByNumber(1);
+        Player player1 = game.getPlayerByNumber(1);
         player1.getStock().putAll(Map.of(
                 Card.RANCH, 3,
                 Card.CONVENIENCE_STORE, 2,
@@ -179,7 +179,7 @@ public class GameServiceTests {
                 Card.FRUIT_AND_VEGETABLE_GARDEN, 5
         )); //also includes 1 wheat field and 1 bakery
 
-        Player player2 = game.findPlayerByNumber(2);
+        Player player2 = game.getPlayerByNumber(2);
         player2.getStock().putAll(Map.of(
                 Card.CONVENIENCE_STORE, 2,
                 Card.FOREST, 3,
@@ -187,7 +187,7 @@ public class GameServiceTests {
                 Card.CAFE, 1
         )); //also includes 1 wheat field and 1 bakery
 
-        Player player3 = game.findPlayerByNumber(3);
+        Player player3 = game.getPlayerByNumber(3);
         player3.getStock().putAll(Map.of(
                 Card.WHEAT, 2,
                 Card.CAFE, 1,
@@ -219,7 +219,7 @@ public class GameServiceTests {
         gameService.roll("testCode", rollTwo);
 
         assertEquals(Step.BUY, game.getStep());
-        assertEquals(player1Coins, player1.getCoins(), "The number of coins for player 1 should equal " + player1.getCoins());
+        assertEquals(player1Coins, player1.getCoins(), "The number of coins for player 1 should equal " + player1Coins);
         assertEquals(player2Coins, player2.getCoins(), "The number of coins for player 2 should equal " + player2Coins);
         assertEquals(player3Coins, player3.getCoins(), "The number of coins for player 3 should equal " + player3Coins);
 
@@ -234,7 +234,7 @@ public class GameServiceTests {
 
         game.setStep(Step.ROLL);
         game.setCurrentPlayerNumber(1);
-        Player player1 = game.findPlayerByNumber(1);
+        Player player1 = game.getPlayerByNumber(1);
         player1.getStock().putAll(Map.of(Card.RANCH, 2, Card.STADIUM, 2));
         player1.setCoins(4);
         player1.getLandmarks().add(Landmark.RADIO_TOWER);
@@ -261,7 +261,7 @@ public class GameServiceTests {
         game.setStep(Step.CONFIRM_ROLL);
         game.setCurrentPlayerNumber(1);
         game.setRolledOnce(true);
-        Player player1 = game.findPlayerByNumber(1);
+        Player player1 = game.getPlayerByNumber(1);
         player1.getStock().putAll(Map.of(
                 Card.FOREST, 2,
                 Card.MINE, 3,
@@ -306,8 +306,8 @@ public class GameServiceTests {
 
         game.setStep(Step.ROLL);
         game.setCurrentPlayerNumber(2);
-        game.findPlayerByNumber(1).getLandmarks().add(Landmark.TRAIN_STATION); // not current player
-        game.findPlayerByNumber(2);
+        game.getPlayerByNumber(1).getLandmarks().add(Landmark.TRAIN_STATION); // not current player
+        game.getPlayerByNumber(2);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);
 
@@ -324,7 +324,7 @@ public class GameServiceTests {
 
         game.setStep(Step.CONFIRM_ROLL);
         game.setCurrentPlayerNumber(2);
-        Player player2 = game.findPlayerByNumber(2);
+        Player player2 = game.getPlayerByNumber(2);
         player2.setCoins(2);
         player2.getStock().put(Card.CONVENIENCE_STORE, 3);
         player2.getLandmarks().add(Landmark.RADIO_TOWER);
@@ -352,7 +352,7 @@ public class GameServiceTests {
 
         game.setStep(Step.BUY);
         game.setCurrentPlayerNumber(2);
-        Player player2 = game.findPlayerByNumber(2);
+        Player player2 = game.getPlayerByNumber(2);
         player2.setCoins(20);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);
@@ -361,7 +361,7 @@ public class GameServiceTests {
 
         Integer expectedCost = 20 - card.getCost();
 
-        assertEquals(1, player2.getCardCount(card), "Player 2 should have 1 " + card);
+        assertEquals(1, player2.getStock().getOrDefault(card, 0), "Player 2 should have 1 " + card);
         assertEquals(7, game.getGameStock().get(card), "Game stock should have 7 of " + card);
         assertEquals(expectedCost, player2.getCoins(), "Player 2 should have " + expectedCost + " coins");
         assertTrue(player2.getLandmarks().isEmpty(), "Player 2 should not have any landmarks");
@@ -379,7 +379,7 @@ public class GameServiceTests {
 
         game.setStep(Step.BUY);
         game.setCurrentPlayerNumber(1);
-        Player player = game.findPlayerByNumber(1);
+        Player player = game.getPlayerByNumber(1);
         player.setCoins(4);
         game.getGameStock().put(Card.RANCH, 3);
         player.getStock().putAll(Map.of(Card.RANCH, 2, Card.FOREST, 1));
@@ -388,7 +388,7 @@ public class GameServiceTests {
 
         gameService.purchaseCard("testCode", Card.RANCH);
 
-        assertEquals(3, player.getCardCount(Card.RANCH), "Player should have 3 ranch cards");
+        assertEquals(3, player.getStock().getOrDefault(Card.RANCH, 0), "Player should have 3 ranch cards");
         assertEquals(2, game.getGameStock().get(Card.RANCH), "Game stock should have 2 ranch cards");
         assertEquals(3, player.getCoins(), "Player 1 should have 3 coins");
         assertTrue(player.getLandmarks().isEmpty(), "Player 1 should not have any landmarks");
@@ -406,14 +406,14 @@ public class GameServiceTests {
 
         game.setStep(Step.BUY);
         game.setCurrentPlayerNumber(1);
-        Player player = game.findPlayerByNumber(1);
+        Player player = game.getPlayerByNumber(1);
         player.setCoins(8);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);
 
         gameService.purchaseCard("testCode", Card.TV_STATION);
 
-        assertEquals(1, player.getCardCount(Card.TV_STATION), "Player should have 1 TV station card");
+        assertEquals(1, player.getStock().getOrDefault(Card.TV_STATION, 0), "Player should have 1 TV station card");
         assertEquals(2, game.getGameStock().get(Card.TV_STATION), "Game stock should have 2 TV station cards");
         assertEquals(1, player.getCoins(), "Player 1 should have 1 coin");
         assertEquals(Step.ROLL, game.getStep(), "Game step should be ROLL");
@@ -432,7 +432,7 @@ public class GameServiceTests {
         game.setCurrentPlayerNumber(2);
         game.setDie1(2);
         game.setDie2(2);
-        Player player = game.findPlayerByNumber(2);
+        Player player = game.getPlayerByNumber(2);
         player.setCoins(5);
         player.getLandmarks().addAll(Set.of(Landmark.TRAIN_STATION, Landmark.AMUSEMENT_PARK));
 
@@ -443,7 +443,7 @@ public class GameServiceTests {
         assertEquals(Step.ROLL, game.getStep(), "Game step should be ROLL");
         assertEquals(2, game.getCurrentPlayerNumber(), "Current player should still be player 2");
         assertEquals(3, player.getCoins(), "Player 2 should have 3 coins");
-        assertEquals(1, player.getCardCount(Card.CAFE), "Player 2 should have 1 cafe card");
+        assertEquals(1, player.getStock().getOrDefault(Card.CAFE, 0), "Player 2 should have 1 cafe card");
         assertEquals(7, game.getGameStock().get(Card.CAFE), "Game stock should have 7 cafe cards");
 
         verifySaves(game, 2);
@@ -457,7 +457,7 @@ public class GameServiceTests {
 
         game.setStep(Step.CONFIRM_ROLL);
         game.setCurrentPlayerNumber(2);
-        Player player = game.findCurrentPlayer();
+        Player player = game.getCurrentPlayer();
         player.setCoins(10);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);
@@ -475,7 +475,7 @@ public class GameServiceTests {
 
         game.setStep(Step.BUY);
         game.setCurrentPlayerNumber(4);
-        Player player = game.findPlayerByNumber(4);
+        Player player = game.getPlayerByNumber(4);
         player.setCoins(1);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);
@@ -494,7 +494,7 @@ public class GameServiceTests {
         game.setStep(Step.BUY);
         game.setCurrentPlayerNumber(2);
         game.getGameStock().put(Card.CHEESE_FACTORY, 0);
-        Player player = game.findCurrentPlayer();
+        Player player = game.getCurrentPlayer();
         player.setCoins(10);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);
@@ -513,7 +513,7 @@ public class GameServiceTests {
 
         game.setStep(Step.BUY);
         game.setCurrentPlayerNumber(1);
-        Player player = game.findCurrentPlayer();
+        Player player = game.getCurrentPlayer();
         player.setCoins(10);
         game.getGameStock().put(card, 2);
         player.getStock().put(card, 1);
@@ -533,7 +533,7 @@ public class GameServiceTests {
 
         game.setStep(Step.BUY);
         game.setCurrentPlayerNumber(2);
-        Player player = game.findCurrentPlayer();
+        Player player = game.getCurrentPlayer();
         player.setCoins(6);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);
@@ -557,7 +557,7 @@ public class GameServiceTests {
 
         game.setStep(Step.BUY);
         game.setCurrentPlayerNumber(2);
-        Player player = game.findCurrentPlayer();
+        Player player = game.getCurrentPlayer();
         player.setCoins(14);
         player.getLandmarks().add(Landmark.TRAIN_STATION);
 
@@ -582,7 +582,7 @@ public class GameServiceTests {
 
         game.setStep(Step.BUY);
         game.setCurrentPlayerNumber(1);
-        Player player = game.findCurrentPlayer();
+        Player player = game.getCurrentPlayer();
         player.setCoins(24);
         player.getLandmarks().addAll(Set.of(Landmark.TRAIN_STATION, Landmark.SHOPPING_MALL, Landmark.AMUSEMENT_PARK));
 
@@ -604,7 +604,7 @@ public class GameServiceTests {
 
         game.setStep(Step.ROLL);
         game.setCurrentPlayerNumber(2);
-        Player player = game.findCurrentPlayer();
+        Player player = game.getCurrentPlayer();
         player.setCoins(10);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);
@@ -622,7 +622,7 @@ public class GameServiceTests {
 
         game.setStep(Step.BUY);
         game.setCurrentPlayerNumber(2);
-        Player player = game.findCurrentPlayer();
+        Player player = game.getCurrentPlayer();
         player.setCoins(3);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);
@@ -640,7 +640,7 @@ public class GameServiceTests {
 
         game.setStep(Step.BUY);
         game.setCurrentPlayerNumber(1);
-        Player player = game.findCurrentPlayer();
+        Player player = game.getCurrentPlayer();
         player.setCoins(10);
         player.getLandmarks().add(Landmark.TRAIN_STATION);
 
@@ -659,11 +659,11 @@ public class GameServiceTests {
         game.setStep(Step.STEAL);
         game.setDie1(6);
         game.setCurrentPlayerNumber(1);
-        Player player1 = game.findPlayerByNumber(1);
+        Player player1 = game.getPlayerByNumber(1);
         player1.getStock().put(Card.TV_STATION, 1);
         player1.setCoins(3);
-        game.findPlayerByNumber(2).setCoins(3);
-        game.findPlayerByNumber(3).setCoins(7);
+        game.getPlayerByNumber(2).setCoins(3);
+        game.getPlayerByNumber(3).setCoins(7);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);
 
@@ -671,8 +671,8 @@ public class GameServiceTests {
 
         assertEquals(Step.BUY, game.getStep(), "Game step should be BUY");
         assertEquals(8, player1.getCoins(), "Player 1 should have 8 coins");
-        assertEquals(3, game.findPlayerByNumber(2).getCoins(), "Player 2 should have 3 coins.");
-        assertEquals(2, game.findPlayerByNumber(3).getCoins(), "Player 3 should have 2 coins");
+        assertEquals(3, game.getPlayerByNumber(2).getCoins(), "Player 2 should have 3 coins.");
+        assertEquals(2, game.getPlayerByNumber(3).getCoins(), "Player 3 should have 2 coins");
 
         verifySaves(game, 2);
     }
@@ -685,11 +685,11 @@ public class GameServiceTests {
         game.setStep(Step.STEAL);
         game.setDie1(6);
         game.setCurrentPlayerNumber(1);
-        Player player1 = game.findPlayerByNumber(1);
+        Player player1 = game.getPlayerByNumber(1);
         player1.getStock().put(Card.TV_STATION, 1);
         player1.setCoins(3);
-        game.findPlayerByNumber(2).setCoins(3);
-        game.findPlayerByNumber(3).setCoins(2);
+        game.getPlayerByNumber(2).setCoins(3);
+        game.getPlayerByNumber(3).setCoins(2);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);
 
@@ -697,8 +697,8 @@ public class GameServiceTests {
 
         assertEquals(Step.BUY, game.getStep(), "Game step should be BUY");
         assertEquals(6, player1.getCoins(), "Player 1 should have 6 coins");
-        assertEquals(0, game.findPlayerByNumber(2).getCoins(), "Player 2 should have 0 coins.");
-        assertEquals(2, game.findPlayerByNumber(3).getCoins(), "Player 3 should have 2 coins");
+        assertEquals(0, game.getPlayerByNumber(2).getCoins(), "Player 2 should have 0 coins.");
+        assertEquals(2, game.getPlayerByNumber(3).getCoins(), "Player 3 should have 2 coins");
 
         verifySaves(game, 2);
     }
@@ -711,7 +711,7 @@ public class GameServiceTests {
         game.setStep(Step.BUY);
         game.setDie1(2);
         game.setCurrentPlayerNumber(3);
-        Player player3 = game.findPlayerByNumber(3);
+        Player player3 = game.getPlayerByNumber(3);
         player3.setCoins(4);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);

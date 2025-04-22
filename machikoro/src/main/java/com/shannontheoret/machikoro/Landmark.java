@@ -1,33 +1,24 @@
 package com.shannontheoret.machikoro;
 
 public enum Landmark {
-    TRAIN_STATION("train", 4),
-    SHOPPING_MALL("shopping", 10),
-    AMUSEMENT_PARK("amusement", 16),
-    RADIO_TOWER("radio", 22);
+    TRAIN_STATION(4),
+    SHOPPING_MALL(10),
+    AMUSEMENT_PARK(16),
+    RADIO_TOWER(22);
 
-    private String id;
     private int cost;
+    public final static int TOTAL_COST = 52;
 
-    Landmark(String id, int cost) {
-        this.id = id;
+    Landmark(int cost) {
         this.cost = cost;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public int getCost() {
         return cost;
     }
 
-    public static Landmark getLandmarkFromId(String id) {
-        for (Landmark landmark : Landmark.values()) {
-            if (landmark.getId().equals(id)) {
-                return landmark;
-            }
-        }
-        return null;
+    public double getProgress() {
+        return (double) cost/(double) TOTAL_COST;
     }
+
 }

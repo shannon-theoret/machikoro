@@ -5,10 +5,10 @@ import com.shannontheoret.machikoro.exception.GameMechanicException;
 import jakarta.persistence.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Entity(name="player")
 public class Player {
+    private static final double COINS_TOWARDS_PROGRESS_FACTOR = 0.5;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,8 +53,17 @@ public class Player {
     @Column(name="npc", nullable = false)
     private boolean npc = false;
 
-    @Column(name="strategy", nullable = true)
-    private Strategy strategy;
+    @ElementCollection
+    @CollectionTable(
+            name="strategy",
+            joinColumns = @JoinColumn(
+                    name = "player_id",
+                    referencedColumnName = "id",
+                    foreignKey = @ForeignKey(name = "FK_player_strategy_player")))
+    @MapKeyColumn(name="strategy_name", nullable = true)
+    @Column(name="degree", nullable = true)
+    @Enumerated(EnumType.STRING)
+    private Map<StrategyName, Integer> strategy;
 
     public Player() {
         addCard(Card.WHEAT);
@@ -102,11 +111,11 @@ public class Player {
         this.npc = npc;
     }
 
-    public Strategy getStrategy() {
+    public Map<StrategyName, Integer> getStrategy() {
         return strategy;
     }
 
-    public void setStrategy(Strategy strategy) {
+    public void setStrategy(Map<StrategyName, Integer> strategy) {
         this.strategy = strategy;
     }
 
@@ -182,72 +191,27 @@ public class Player {
         decreaseCoinCount(card.getCost());
     }
 
-    public Integer getCountOfCardsInCategory(CardCategory category) {
-        int countOfCategoryCards = 0;
-        List<Card> categoryCards = stock.keySet()
-                .stream()
-                .filter(card -> card.getCategory() == category)
-                .collect(Collectors.toList());
-        for ( Card cardCategory: categoryCards) {
-            countOfCategoryCards += stock.get(cardCategory);
+    public double getProgress() {
+        Integer totalValuePurchases = 0;
+        for (Landmark purchasedLandmark : landmarks) {
+            totalValuePurchases += purchasedLandmark.getCost();
         }
-        return countOfCategoryCards;
+        Integer coinsTowardProgress = Math.min(Landmark.TOTAL_COST - totalValuePurchases, coins);
+        return ((double) totalValuePurchases + (double) coinsTowardProgress * COINS_TOWARDS_PROGRESS_FACTOR)/((double) Landmark.TOTAL_COST);
     }
 
-    public Set<Card> getRedCardsForRoll(Integer roll) {
-        Set<Card> releventCards = stock
-                .keySet()
-                .stream()
-                .filter(card -> card.rollApplies(roll) && card.isSteals())
-                .collect(Collectors.toSet());
-        return releventCards;
-    }
+    public Player deepCopy() {
+        Player copy = new Player();
 
-    public Set<Card> getBlueCardsForRoll(Integer roll) {
-        Set<Card> releventCards = stock
-                .keySet()
-                .stream()
-                .filter(card -> card.rollApplies(roll) && card.isOnAnyonesTurn())
-                .collect(Collectors.toSet());
-        return releventCards;
-    }
+        copy.setNumber(this.number);
+        copy.setName(this.name);
+        copy.setCoins(this.coins);
+        copy.setNpc(this.npc);
+        copy.strategy = new EnumMap<>(this.strategy);
+        copy.landmarks = EnumSet.copyOf(this.landmarks);
 
-    public Set<Card> getCardsForPlayerRoll(Integer roll) {
-        Set<Card> releventCards = stock
-                .keySet()
-                .stream()
-                .filter(card -> card.rollApplies(roll) && card.isOnPlayersTurn() & card.getCategory() != CardCategory.PURPLE)
-                .collect(Collectors.toSet());
-        return releventCards;
-    }
+        copy.stock = new EnumMap<>(this.stock);
 
-    public Integer getCardCount(Card card) {
-        Integer count = 0;
-        if (stock.containsKey(card)) {
-            count = stock.get(card);
-        }
-        return count;
+        return copy;
     }
-
-    public Integer getNumberOfCards() {
-        Integer count = 0;
-        for (Map.Entry<Card, Integer> entry: stock.entrySet()) {
-            count += entry.getValue();
-        }
-        return count;
-    }
-
-    public Integer getNumberOfCardsOverSix() {
-        Integer count = 0;
-        for (Map.Entry<Card, Integer> entry: stock.entrySet()) {
-            for (Integer roll : entry.getKey().getRolls()) {
-                if (roll > 6) {
-                    count += entry.getValue();
-                    break;
-                }
-            }
-        }
-        return count;
-    }
-
 }

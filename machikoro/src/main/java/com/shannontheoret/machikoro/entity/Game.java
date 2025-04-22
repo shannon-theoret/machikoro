@@ -94,6 +94,10 @@ public class Game {
         }
     }
 
+    public boolean didRollTwoDice() {
+        return die2 != null;
+    }
+
     public Boolean isDoubles() {
         return (die1 != 0 && die1 == die2);
     }
@@ -131,22 +135,25 @@ public class Game {
     }
 
     public void incrementCurrentPlayerNumber() throws GameMechanicException {
-        currentPlayerNumber = findNextPlayerNumber(currentPlayerNumber);
+        currentPlayerNumber = getNextPlayerNumber(currentPlayerNumber);
     }
 
-    public Player findCurrentPlayer() throws GameMechanicException {
-        return findPlayerByNumber(currentPlayerNumber);
+    public Player getCurrentPlayer() {
+        return players.stream()
+                .filter(player -> player.getNumber() == currentPlayerNumber)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Current player not found."));
     }
 
-    public Player findNextPlayer(Integer playerNumber) throws GameMechanicException {
-        return findPlayerByNumber(findNextPlayerNumber(playerNumber));
+    public Player getNextPlayer(Integer playerNumber) throws GameMechanicException {
+        return getPlayerByNumber(getNextPlayerNumber(playerNumber));
     }
 
-    public Player findPreviousPlayer(Integer playerNumber) throws GameMechanicException {
-        return findPlayerByNumber(findPreviousPlayerNumber(playerNumber));
+    public Player getPreviousPlayer(Integer playerNumber) throws GameMechanicException {
+        return getPlayerByNumber(getPreviousPlayerNumber(playerNumber));
     }
 
-    public Player findPlayerByNumber(Integer playerNumber) throws GameMechanicException {
+    public Player getPlayerByNumber(Integer playerNumber) throws GameMechanicException {
         for (Player player : players) {
             if (player.getNumber() == playerNumber) {
                 return player;
@@ -155,7 +162,26 @@ public class Game {
         throw new GameMechanicException("Player not found.");
     }
 
-    private Integer findNextPlayerNumber(Integer playerNumber) throws GameMechanicException {
+    public Game deepCopy() throws GameMechanicException {
+        Game copy = new Game();
+
+        copy.setStep(this.step);
+        copy.setDie1(this.die1);
+        copy.setDie2(this.die2);
+        copy.setRolledOnce(this.rolledOnce);
+        copy.setCurrentPlayerNumber(this.currentPlayerNumber);
+        copy.setGameStock(new EnumMap<>(this.gameStock));
+        Set<Player> copiedPlayers = new HashSet<>();
+        for (Player player : this.players) {
+            Player copiedPlayer = player.deepCopy();
+            copiedPlayers.add(copiedPlayer);
+        }
+        copy.setPlayers(copiedPlayers);
+
+        return copy;
+    }
+
+    private Integer getNextPlayerNumber(Integer playerNumber) throws GameMechanicException {
         Integer nextPlayerNumber = playerNumber + 1;
         if (nextPlayerNumber > players.size()) {
             nextPlayerNumber = 1;
@@ -163,7 +189,7 @@ public class Game {
         return nextPlayerNumber;
     }
 
-    private Integer findPreviousPlayerNumber(Integer playerNumber) throws GameMechanicException {
+    private Integer getPreviousPlayerNumber(Integer playerNumber) throws GameMechanicException {
         Integer previousPlayerNumber = playerNumber -1;
         if (previousPlayerNumber < 1) {
             previousPlayerNumber = players.size();
@@ -176,4 +202,6 @@ public class Game {
             throw new GameMechanicException("Die roll must be between 1 and 6");
         }
     }
+
+
 }

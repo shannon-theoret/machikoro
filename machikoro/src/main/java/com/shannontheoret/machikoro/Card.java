@@ -29,6 +29,7 @@ public enum Card {
     private final boolean isBasic;
     private final int amountGained;
     private final int cost;
+    public final static Integer ALL_PURPLE_ROLL = 6;
 
     Card(int roll, boolean onPlayersTurn, boolean onAnyonesTurn, boolean steals, CardCategory category, boolean isBasic, int amountGained, int cost) {
         this.rolls = new HashSet<>();

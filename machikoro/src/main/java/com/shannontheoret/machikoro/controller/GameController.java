@@ -134,6 +134,17 @@ public class GameController {
         }
     }
 
+    @PostMapping("/makeNPCMove")
+    public ResponseEntity<Object> makeNPCMove(@RequestParam String gameCode) {
+        try {
+            return ResponseEntity.ok(gameService.makeNPCMove(gameCode));
+        } catch (GameException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 /*
     @PostMapping("/beginGame")
     public ResponseEntity<Object> beginGame(@RequestParam String gameCode, Map<Integer, String> playerNames) {

@@ -9,6 +9,7 @@ import com.shannontheoret.machikoro.exception.GameCodeNotFoundException;
 import com.shannontheoret.machikoro.exception.GameMechanicException;
 import com.shannontheoret.machikoro.exception.InvalidMoveException;
 import com.shannontheoret.machikoro.utilities.GameUtilities;
+import com.shannontheoret.machikoro.utilities.RollEffectCalculator;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,7 +59,7 @@ public class GameService {
             if (card.getCategory() == CardCategory.PURPLE) {
                 gameStock.put(card, numberOfPlayers);
             } else {
-                gameStock.put(card, 8);
+                gameStock.put(card, GameRules.STARTING_STOCK);
             }
         }
         game.setStep(Step.SETUP);
@@ -73,7 +74,7 @@ public class GameService {
         if (game.getStep() != Step.SETUP) {
             throw new InvalidMoveException("Game has already begun");
         }
-        Player player = game.findPlayerByNumber(number);
+        Player player = game.getPlayerByNumber(number);
         if (name.length() > 0) {
             player.setName(name);
         }
@@ -100,7 +101,7 @@ public class GameService {
         if (game.getStep() != Step.ROLL && game.getStep() != Step.CONFIRM_ROLL) {
             throw new InvalidMoveException("Cannot roll dice at this time.");
         }
-        Player currentPlayer = game.findCurrentPlayer();
+        Player currentPlayer = game.getCurrentPlayer();
         game.setDie1(gameUtilities.generateRandomDieRoll());
         if (rollTwo) {
             if(!currentPlayer.hasTrainStation()) {
@@ -134,11 +135,11 @@ public class GameService {
     @Transactional
     public Game steal(String code, Integer playerNumberToStealFrom) throws GameMechanicException, GameCodeNotFoundException, InvalidMoveException {
         Game game = findByCode(code);
-        Player currentPlayer = game.findCurrentPlayer();
-        if (game.getStep() != Step.STEAL || currentPlayer.getCardCount(Card.TV_STATION) == 0) {
+        Player currentPlayer = game.getCurrentPlayer();
+        if (game.getStep() != Step.STEAL || currentPlayer.getStock().getOrDefault(Card.TV_STATION, 0) == 0) {
             throw new InvalidMoveException("Cannot steal at this time.");
         }
-        Player playerToStealFrom = game.findPlayerByNumber(playerNumberToStealFrom);
+        Player playerToStealFrom = game.getPlayerByNumber(playerNumberToStealFrom);
         Integer amountToSteal = 0;
         if (playerToStealFrom.getCoins() < Card.TV_STATION.getAmountGained()) {
             amountToSteal = playerToStealFrom.getCoins();
@@ -161,11 +162,11 @@ public class GameService {
         if (game.getGameStock().get(card) == 0) {
             throw new InvalidMoveException("Card not in stock.");
         }
-        Player currentPlayer = game.findCurrentPlayer();
+        Player currentPlayer = game.getCurrentPlayer();
         if (currentPlayer.getCoins() < card.getCost()) {
             throw new InvalidMoveException("Player does not have enough coins to purchase card.");
         }
-        if (card.getCategory() == CardCategory.PURPLE && currentPlayer.getCardCount(card) == 1) {
+        if (card.getCategory() == CardCategory.PURPLE && currentPlayer.getStock().getOrDefault(card, 0) == 1) {
             throw new InvalidMoveException("Player cannot purchase the same purple card twice.");
         }
         currentPlayer.purchaseCard(card);
@@ -183,7 +184,7 @@ public class GameService {
         if (game.getStep() != Step.BUY) {
             throw new InvalidMoveException("Cannot purchase landmark at this time.");
         }
-        Player currentPlayer = game.findCurrentPlayer();
+        Player currentPlayer = game.getCurrentPlayer();
         if (currentPlayer.getCoins() < landmark.getCost()) {
             throw new InvalidMoveException("Player does not have enough coins to purchase card.");
         }
@@ -208,12 +209,52 @@ public class GameService {
     }
 
     @Transactional
+    public Game makeNPCMove(String code) throws GameCodeNotFoundException, InvalidMoveException, GameMechanicException {
+        Game game = findByCode(code);
+        if (!game.getCurrentPlayer().isNpc()) {
+            throw new InvalidMoveException("Current player is not an NPC");
+        }
+        StrategicTurnDecisionEngine decisionEngine = new StrategicTurnDecisionEngine(game.getCurrentPlayer().getStrategy(), game);
+        switch (game.getStep()) {
+            case ROLL:
+                 roll(code, !decisionEngine.rollSingleDice());
+                break;
+            case CONFIRM_ROLL:
+                if (decisionEngine.reroll()) {
+                    roll(code, !decisionEngine.rollSingleDice());
+                } else {
+                    confirmRoll(code);
+                }
+                break;
+            case STEAL:
+                steal(code, decisionEngine.choosePlayerToStealFrom());
+                break;
+            case BUY:
+                BuyingDecision buyingDecision = decisionEngine.makeBuyingDecision();
+                if (buyingDecision.isBuyingCard()) {
+                    purchaseCard(code, buyingDecision.getCardToPurchase());
+                } else if (buyingDecision.isBuyingLandmark()) {
+                    purchaseLandmark(code, buyingDecision.getLandmarkToPurchase());
+                } else {
+                    return completeTurn(code);
+                }
+                break;
+            case SETUP:
+            case WON:
+                throw new InvalidMoveException("Game step is " + game.getStep() + " and does not require an npc decision.");
+            default:
+                throw new IllegalStateException("Unexpected step: " + game.getStep());
+        }
+        return game;
+    }
+
+    @Transactional
     public Game testStuff(String code) throws GameMechanicException, GameCodeNotFoundException, InvalidMoveException {
         Game game = findByCode(code);
 
         game.setStep(Step.ROLL);
 
-        Player player1 = game.findPlayerByNumber(1);
+        Player player1 = game.getPlayerByNumber(1);
         player1.getStock().putAll(Map.of(
                 Card.RANCH, 3,
                 Card.CONVENIENCE_STORE, 2,
@@ -224,7 +265,7 @@ public class GameService {
                 Card.FRUIT_AND_VEGETABLE_GARDEN, 5
         )); //also includes 1 wheat field and 1 bakery
 
-        Player player2 = game.findPlayerByNumber(2);
+        Player player2 = game.getPlayerByNumber(2);
         player2.getStock().putAll(Map.of(
                 Card.CONVENIENCE_STORE, 2,
                 Card.FOREST, 3,
@@ -232,7 +273,7 @@ public class GameService {
                 Card.CAFE, 1
         )); //also includes 1 wheat field and 1 bakery
 
-        Player player3 = game.findPlayerByNumber(3);
+        Player player3 = game.getPlayerByNumber(3);
         player3.getStock().putAll(Map.of(
                 Card.WHEAT, 2,
                 Card.CAFE, 1,
@@ -267,87 +308,40 @@ public class GameService {
 
     private void handleRoll(Game game) throws GameMechanicException {
         Integer roll = game.getDieTotal();
-        // handle red cards first (other players steal from current player)
-        Player currentPlayer = game.findCurrentPlayer();
-        Player playerToSteal = game.findPreviousPlayer(game.getCurrentPlayerNumber());
-        while (playerToSteal.getNumber() != game.getCurrentPlayerNumber()) {
-            Set<Card> releventCards = playerToSteal.getRedCardsForRoll(roll);
-            for (Card card: releventCards) {
-                if (card.isBasic()) {
-                    int amountGainedPerCard = card.getAmountGained();
-                    if (playerToSteal.hasShoppingMall() && card.getCategory() == CardCategory.CUP) {
-                        amountGainedPerCard++;
-                    }
-                    int amountToSteal = amountGainedPerCard * playerToSteal.getCardCount(card);
-                    if (currentPlayer.getCoins() < amountToSteal) {
-                        amountToSteal = currentPlayer.getCoins();
-                    }
-                    currentPlayer.decreaseCoinCount(amountToSteal);
-                    playerToSteal.increaseCoinCount(amountToSteal);
-                }
-            }
-            playerToSteal = game.findPreviousPlayer(playerToSteal.getNumber());
-        }
-        // handle green and blue cards for current character
-        Set<Card> releventCards = currentPlayer.getCardsForPlayerRoll(roll);
-        for (Card card : releventCards) {
-            int amountToAdd = 0;
-            if (card.isBasic()) {
-                int amountGainedPerCard = card.getAmountGained();
-                if(currentPlayer.hasShoppingMall() && card.getCategory() == CardCategory.STORE) {
-                    amountGainedPerCard++;
-                }
-                amountToAdd = amountGainedPerCard * currentPlayer.getCardCount(card);
-            } else if (card == Card.CHEESE_FACTORY) {
-                int numberOfCows = currentPlayer.getCountOfCardsInCategory(CardCategory.COW);
-                amountToAdd = numberOfCows * card.getAmountGained() * currentPlayer.getCardCount(card);
-            } else if (card == Card.FURNITURE_FACTORY) {
-                int countOfGearCards = currentPlayer.getCountOfCardsInCategory(CardCategory.GEAR);
-                amountToAdd = countOfGearCards * card.getAmountGained() * currentPlayer.getCardCount(card);
-            } else if (card == Card.FRUIT_AND_VEGETABLE_GARDEN) {
-                int countOfGrainCards = currentPlayer.getCountOfCardsInCategory(CardCategory.GRAIN);
-                amountToAdd = countOfGrainCards * card.getAmountGained() * currentPlayer.getCardCount(card);
-            }
-            currentPlayer.increaseCoinCount(amountToAdd);
-        }
+        Player currentPlayer = game.getCurrentPlayer();
 
-        //handle blue cards for other players
-        Player otherPlayer = game.findNextPlayer(currentPlayer.getNumber());
-        while(otherPlayer.getNumber() != currentPlayer.getNumber()) {
-            releventCards = otherPlayer.getBlueCardsForRoll(roll);
-            for (Card card : releventCards) {
-                if (card.isBasic()) {
-                    int amountToAdd = card.getAmountGained() * otherPlayer.getCardCount(card);
-                    otherPlayer.increaseCoinCount(amountToAdd);
-                }
-            }
-            otherPlayer = game.findNextPlayer(otherPlayer.getNumber());
-        }
+        Map<Integer, Integer> playerRollEffects = RollEffectCalculator.calculateRedCardEffects(game, roll);
+        applyPlayerEffects(game, playerRollEffects);
 
-        //handle purple cards for current player
-        if (currentPlayer.getCardCount(Card.STADIUM) != 0 && Card.STADIUM.rollApplies(roll)) {
-            Player playerToStealFrom = game.findNextPlayer(currentPlayer.getNumber());
-            while (!playerToStealFrom.equals(currentPlayer)) {
-                int amountToSteal = 0;
-                if (playerToStealFrom.getCoins() < Card.STADIUM.getAmountGained()) {
-                    amountToSteal = playerToStealFrom.getCoins();
-                } else {
-                    amountToSteal = Card.STADIUM.getAmountGained();
-                }
-                playerToStealFrom.decreaseCoinCount(amountToSteal);
-                currentPlayer.increaseCoinCount(amountToSteal);
-                playerToStealFrom = game.findNextPlayer(playerToStealFrom.getNumber());
-            }
-        }
-        if (currentPlayer.getCardCount(Card.TV_STATION) != 0 && Card.TV_STATION.rollApplies(roll)) {
+        currentPlayer.increaseCoinCount(RollEffectCalculator.calculateGreenAndBlueEffects(game, roll));
+
+        playerRollEffects = RollEffectCalculator.calculateOtherPlayersBlueEffects(game, roll);
+        applyPlayerEffects(game, playerRollEffects);
+
+        playerRollEffects = RollEffectCalculator.calculateStadiumEffects(game, roll);
+        applyPlayerEffects(game, playerRollEffects);
+
+        if (currentPlayer.getStock().getOrDefault(Card.TV_STATION, 0) != 0 && Card.TV_STATION.rollApplies(roll)) {
             game.setStep(Step.STEAL);
         }
     }
 
+    private void applyPlayerEffects(Game game, Map<Integer, Integer> playerRollEffects) throws GameMechanicException {
+        for (Map.Entry<Integer, Integer> entry : playerRollEffects.entrySet()) {
+            Player player = game.getPlayerByNumber(entry.getKey());
+            int coinChange = entry.getValue();
+            if (coinChange > 0) {
+                player.increaseCoinCount(coinChange);
+            } else {
+                player.decreaseCoinCount(-coinChange);
+            }
+        }
+    }
+
     private void endTurn(Game game) throws GameMechanicException {
-        if (game.findCurrentPlayer().hasWon()) {
+        if (game.getCurrentPlayer().hasWon()) {
             game.setStep(Step.WON);
-        } else if (game.findCurrentPlayer().hasAmusementPark() && game.isDoubles()) {
+        } else if (game.getCurrentPlayer().hasAmusementPark() && game.isDoubles()) {
             game.setStep(Step.ROLL);
         } else {
             game.incrementCurrentPlayerNumber();
