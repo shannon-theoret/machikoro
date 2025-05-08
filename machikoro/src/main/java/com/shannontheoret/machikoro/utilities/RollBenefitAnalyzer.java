@@ -1,10 +1,6 @@
 package com.shannontheoret.machikoro.utilities;
 
-import com.shannontheoret.machikoro.Card;
-
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class RollBenefitAnalyzer {
 
@@ -34,7 +30,7 @@ public class RollBenefitAnalyzer {
             }
     }
 
-    public static Double getAverageGainForOneDieRolled(Map<Integer, Map<Integer, Integer>> allRollEffects, Integer playerNumber) {
+    public static Double calculateAverageGainForOneDieRolled(Map<Integer, Map<Integer, Integer>> allRollEffects, Integer playerNumber) {
         Double averageCoinGain = 0.0;
         for (int rollValue=1; rollValue<=6; rollValue++) {
             averageCoinGain += (double) allRollEffects.get(rollValue).getOrDefault(playerNumber, 0) * SINGLE_ROLL_PROBABILITY;
@@ -42,7 +38,7 @@ public class RollBenefitAnalyzer {
         return averageCoinGain;
     }
 
-    public static Double getAverageGainForTwoDiceRolled(Map<Integer, Map<Integer, Integer>> allRollEffects, Integer playerNumber) {
+    public static Double calculateAverageGainForTwoDiceRolled(Map<Integer, Map<Integer, Integer>> allRollEffects, Integer playerNumber) {
         Double averageCoinGain = 0.0;
         for (int rollValue=2; rollValue<=12; rollValue++) {
             averageCoinGain += (double) allRollEffects.get(rollValue).getOrDefault(playerNumber, 0) * diceRollProbabilityTwoDice(rollValue);
@@ -50,7 +46,7 @@ public class RollBenefitAnalyzer {
         return averageCoinGain;
     }
 
-    public static Double getAverageGainForOtherPlayersForOneDieRolled(Map<Integer, Map<Integer, Integer>> allRollEffects, Integer currentPlayerNumber) {
+    public static Double calculateAverageGainForOtherPlayersForOneDieRolled(Map<Integer, Map<Integer, Integer>> allRollEffects, Integer currentPlayerNumber) {
         Double averageCoinGain = 0.0;
         for (int rollValue=1; rollValue<=6; rollValue++) {
             for(Map.Entry<Integer, Integer> rollEffect : allRollEffects.get(rollValue).entrySet()) {
@@ -74,7 +70,7 @@ public class RollBenefitAnalyzer {
         return averageCoinGain;
     }
 
-    public static Integer getBestCaseScenarioForOneDieRolled(Map<Integer, Map<Integer, Integer>> allRollEffects, Integer playerNumber) {
+    public static Integer calculateBestCaseScenarioForOneDieRolled(Map<Integer, Map<Integer, Integer>> allRollEffects, Integer playerNumber) {
         Integer maxCoins = 0;
         for (int rollValue = 1; rollValue <= 6; rollValue++) {
             Integer coinsForRoll = allRollEffects.get(rollValue).getOrDefault(playerNumber, 0);
@@ -83,7 +79,7 @@ public class RollBenefitAnalyzer {
         return maxCoins;
     }
 
-    public static Integer getBestCaseScenarioForTwoDiceRolled(Map<Integer, Map<Integer, Integer>> allRollEffects, Integer playerNumber) {
+    public static Integer calculateBestCaseScenarioForTwoDiceRolled(Map<Integer, Map<Integer, Integer>> allRollEffects, Integer playerNumber) {
         Integer maxCoins = 0;
         for (int rollValue = 2; rollValue <= 12; rollValue++) {
             Integer coinsForRoll = allRollEffects.get(rollValue).getOrDefault(playerNumber, 0);
@@ -92,12 +88,13 @@ public class RollBenefitAnalyzer {
         return maxCoins;
     }
 
-    public static Double getBestCaseScenarioProbabilityForTwoDiceRolled(Map<Integer, Map<Integer, Integer>> allRollEffects, Integer playerNumber) {
+    public static Double calculateBestCaseScenarioProbabilityForTwoDiceRolled(Map<Integer, Map<Integer, Integer>> allRollEffects, Integer playerNumber) {
         Integer maxCoins = 0;
         Double bestCaseProbability = 1.0; //If the best case is that the player gets no coins there is a 100% chance this will happen barring some strange red card scenarios
         for (int rollValue = 2; rollValue <= 12; rollValue++) {
             Integer coinsForRoll = allRollEffects.get(rollValue).getOrDefault(playerNumber, 0);
-            if (coinsForRoll > maxCoins) {
+            if (coinsForRoll > maxCoins || (coinsForRoll == maxCoins && bestCaseProbability < diceRollProbabilityTwoDice(rollValue))) {
+                maxCoins = coinsForRoll;
                 bestCaseProbability = diceRollProbabilityTwoDice(rollValue);
             }
         }

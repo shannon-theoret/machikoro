@@ -46,9 +46,9 @@ public class RollEffectCalculator {
         return playerRollEffects;
     }
 
-    public static Integer calculateGreenAndBlueEffects(Game game, Integer roll) throws GameMechanicException {
+    public static Integer calculateGreenAndBlueEffectsForCurrentPlayer(Game game, Integer roll) throws GameMechanicException {
         Player currentPlayer = game.getCurrentPlayer();
-        Set<Card> relevantCards = PlayerStockUtilities.getCardsForPlayerRoll(currentPlayer.getStock(), roll);
+        Set<Card> relevantCards = PlayerStockUtilities.getGreenAndBlueCardsForPlayerRoll(currentPlayer.getStock(), roll);
         Integer amountToAdd = 0;
         for (Card card : relevantCards) {
             if (card.isBasic()) {
@@ -106,6 +106,10 @@ public class RollEffectCalculator {
                 playerToStealFrom = game.getNextPlayer(playerToStealFrom.getNumber());
             }
             playerRollEffects.put(currentPlayer.getNumber(), amountToAddToCurrentPlayer);
+        } else {
+            for (int playerNumber=1; playerNumber<= game.getPlayers().size(); playerNumber++) {
+                playerRollEffects.put(playerNumber, 0);
+            }
         }
         return playerRollEffects;
     }
@@ -119,7 +123,7 @@ public class RollEffectCalculator {
             Integer bestPlayerNumberToStealFrom = otherPlayer.getNumber();
             while (otherPlayer.getNumber() != currentPlayer.getNumber()) {
                 if (otherPlayer.getCoins() > amountToSteal) {
-                    amountToSteal = Math.max(otherPlayer.getCoins(), Card.TV_STATION.getAmountGained());
+                    amountToSteal = Math.min(otherPlayer.getCoins(), Card.TV_STATION.getAmountGained());
                     bestPlayerNumberToStealFrom = otherPlayer.getNumber();
                 }
                 otherPlayer = game.getNextPlayer(otherPlayer.getNumber());
@@ -127,6 +131,12 @@ public class RollEffectCalculator {
             playerRollEffects.put(bestPlayerNumberToStealFrom, -amountToSteal);
             playerRollEffects.put(currentPlayer.getNumber(), amountToSteal);
         }
+        for (int playerNumber=1; playerNumber<= game.getPlayers().size(); playerNumber++) {
+            if (!playerRollEffects.containsKey(playerNumber)) {
+                playerRollEffects.put(playerNumber, 0);
+            }
+        }
+
         return playerRollEffects;
     }
 
@@ -136,7 +146,7 @@ public class RollEffectCalculator {
         for (int roll=1; roll <=12; roll++) {
             Map<Integer, Integer> playerRollEffects = new HashMap<>();
             mergePlayerRollEffects(playerRollEffects, calculateRedCardEffects(game, roll));
-            playerRollEffects.merge(game.getCurrentPlayerNumber(), calculateGreenAndBlueEffects(game, roll), Integer::sum);
+            playerRollEffects.merge(game.getCurrentPlayerNumber(), calculateGreenAndBlueEffectsForCurrentPlayer(game, roll), Integer::sum);
             mergePlayerRollEffects(playerRollEffects, calculateOtherPlayersBlueEffects(game, roll));
             mergePlayerRollEffects(playerRollEffects, calculateStadiumEffects(game, roll));
             mergePlayerRollEffects(playerRollEffects, calculateMaximumTVStationEffect(game, roll));

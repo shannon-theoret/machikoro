@@ -106,6 +106,20 @@ const completeTurn = async () => {
   }
 }
 
+const testStuff = async () => {
+  try {
+      const response = await api.get('/testStuff', {
+        params: { gameCode: gameCode.value }
+      });
+      game.value = response.data;
+      toStart.value = false;
+      error.value = "";
+    } catch (err) {
+      console.log(err);
+      error.value = err.response?.data?.message || "An unknown error occurred.";
+    }
+}
+
 const makeApiCall = async (url, data, params) => {
     try {
         const response = await api.post(url, data, { params });
@@ -133,6 +147,7 @@ onMounted(() => {
 <template>
   <Header :gameCode="gameCode" @new-game="newGame" @open-game="openGame"/>
   <div class="machikoro">
+  <button @click="testStuff">Test Stuff</button>
     {{ error }}
     <NewGame v-if="toStart" @begin-game="beginGame"></NewGame>
     <Game 

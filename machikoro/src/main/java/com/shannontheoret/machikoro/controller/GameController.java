@@ -25,7 +25,7 @@ public class GameController {
     @GetMapping("/testStuff")
     public ResponseEntity<Object> testStuff(@RequestParam String gameCode) {
         try {
-            return ResponseEntity.ok(gameService.testStuff(gameCode));
+            return ResponseEntity.ok("HI!");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

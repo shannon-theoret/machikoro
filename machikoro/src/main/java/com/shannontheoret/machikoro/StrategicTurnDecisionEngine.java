@@ -51,11 +51,11 @@ public class StrategicTurnDecisionEngine {
         Double averageBenefit;
         Integer bestCaseBenefit;
         if (game.didRollTwoDice()) { //player will make the same decision on number of dice rolled upon reroll
-            averageBenefit = RollBenefitAnalyzer.getAverageGainForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
-            bestCaseBenefit = RollBenefitAnalyzer.getBestCaseScenarioForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
+            averageBenefit = RollBenefitAnalyzer.calculateAverageGainForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
+            bestCaseBenefit = RollBenefitAnalyzer.calculateBestCaseScenarioForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
         } else {
-            averageBenefit = RollBenefitAnalyzer.getAverageGainForOneDieRolled(allRollEffects, game.getCurrentPlayerNumber());
-            bestCaseBenefit = RollBenefitAnalyzer.getBestCaseScenarioForOneDieRolled(allRollEffects, game.getCurrentPlayerNumber());
+            averageBenefit = RollBenefitAnalyzer.calculateAverageGainForOneDieRolled(allRollEffects, game.getCurrentPlayerNumber());
+            bestCaseBenefit = RollBenefitAnalyzer.calculateBestCaseScenarioForOneDieRolled(allRollEffects, game.getCurrentPlayerNumber());
         }
         return strategy.reroll(currentBenefit, otherPlayerBenefit, bestCaseBenefit, averageBenefit);
     }
@@ -115,11 +115,11 @@ public class StrategicTurnDecisionEngine {
 
     private BuyingDecision evaluateTrainStation() {
         BuyingDecision buyingDecision = new BuyingDecision(Landmark.TRAIN_STATION);
-        Double averageGainOneDie = RollBenefitAnalyzer.getAverageGainForOneDieRolled(allRollEffects, game.getCurrentPlayerNumber());
-        Double averageGainTwoDice = RollBenefitAnalyzer.getAverageGainForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
-        Integer bestCoinTwoDice = RollBenefitAnalyzer.getBestCaseScenarioForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
-        Double otherAverageGainOneDie = RollBenefitAnalyzer.getAverageGainForOneDieRolled(allRollEffects, game.getCurrentPlayerNumber());
-        Double otherAverageGainTwoDie = RollBenefitAnalyzer.getAverageGainForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
+        Double averageGainOneDie = RollBenefitAnalyzer.calculateAverageGainForOneDieRolled(allRollEffects, game.getCurrentPlayerNumber());
+        Double averageGainTwoDice = RollBenefitAnalyzer.calculateAverageGainForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
+        Integer bestCoinTwoDice = RollBenefitAnalyzer.calculateBestCaseScenarioForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
+        Double otherAverageGainOneDie = RollBenefitAnalyzer.calculateAverageGainForOtherPlayersForOneDieRolled(allRollEffects, game.getCurrentPlayerNumber());
+        Double otherAverageGainTwoDie = RollBenefitAnalyzer.calculateAverageGainForOtherPlayersForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
         if (strategy.rollSingle(averageGainOneDie, averageGainTwoDice, bestCoinTwoDice, otherAverageGainOneDie, otherAverageGainTwoDie)) {
             buyingDecision.setAverageBenefitPerRound(averageGainTwoDice - averageGainOneDie);
             buyingDecision.getStrategicValue().put(StrategyName.ATTACK_FOCUSED, otherAverageGainOneDie - otherAverageGainTwoDie);
@@ -160,7 +160,7 @@ public class StrategicTurnDecisionEngine {
     private BuyingDecision evaluateAmusementPark() throws GameMechanicException {
         BuyingDecision buyingDecision = new BuyingDecision(Landmark.AMUSEMENT_PARK);
         if (game.getCurrentPlayer().hasTrainStation()) {
-            Double averageGainTwoDice = RollBenefitAnalyzer.getAverageGainForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
+            Double averageGainTwoDice = RollBenefitAnalyzer.calculateAverageGainForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
             buyingDecision.setAverageBenefitPerRound(averageGainTwoDice * RollBenefitAnalyzer.DOUBLES_PROBABILITY);
         } else {
             buyingDecision.setAverageBenefitPerRound(0.0);
@@ -170,8 +170,8 @@ public class StrategicTurnDecisionEngine {
 
     private BuyingDecision evaluateRadioTower() throws GameMechanicException {
         BuyingDecision buyingDecision = new BuyingDecision(Landmark.RADIO_TOWER);
-        Integer bestCoins = RollBenefitAnalyzer.getBestCaseScenarioForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
-        Double bestCoinsProbability = RollBenefitAnalyzer.getBestCaseScenarioProbabilityForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
+        Integer bestCoins = RollBenefitAnalyzer.calculateBestCaseScenarioForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
+        Double bestCoinsProbability = RollBenefitAnalyzer.calculateBestCaseScenarioProbabilityForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
         buyingDecision.setAverageBenefitPerRound(bestCoins * bestCoinsProbability * 2);
         buyingDecision.getStrategicValue().put(StrategyName.CHEESE_FOCUSED, GREEN_STRATEGY_RADIO_FACTOR);
         buyingDecision.getStrategicValue().put(StrategyName.FRUIT_AND_VEG_FOCUSED, GREEN_STRATEGY_RADIO_FACTOR);
@@ -180,99 +180,99 @@ public class StrategicTurnDecisionEngine {
     }
 
     private BuyingDecision evalauteCard(Card card) throws GameMechanicException {
-    BuyingDecision buyingDecision = new BuyingDecision(card);
-    Player currentPlayer = game.getCurrentPlayer();
-    if (card.isSteals()) {
-        Double totalAverageBenefitIfCoinsAvailable = 0.0;
-        for (Player player : game.getPlayers()) {
-            if (player.getNumber() != currentPlayer.getNumber()) {
-                Double averageBenefitIfCoinsAvailable = 0.0;
-                Integer amountGained = currentPlayer.hasShoppingMall()? card.getAmountGained() + 1 : card.getAmountGained();
-                //assumption that if a player has a train station they will roll two dice is limited of course
-                if (player.hasTrainStation()) {
-                    for (int rollValue : card.getRolls()) {
-                        averageBenefitIfCoinsAvailable += amountGained * RollBenefitAnalyzer.diceRollProbabilityTwoDice(rollValue);
-                    }
-                } else {
-                    for (int rollValue : card.getRolls()) {
-                        if (rollValue <= 6) {
-                            averageBenefitIfCoinsAvailable += amountGained * RollBenefitAnalyzer.SINGLE_ROLL_PROBABILITY;
-                        } else {
-                            //still some benefit long term as they will probably buy train station in future
-                            averageBenefitIfCoinsAvailable += amountGained * RollBenefitAnalyzer.diceRollProbabilityTwoDice(rollValue) * LONG_TERM_FACTOR;
+        BuyingDecision buyingDecision = new BuyingDecision(card);
+        Player currentPlayer = game.getCurrentPlayer();
+        if (card.isSteals()) {
+            Double totalAverageBenefitIfCoinsAvailable = 0.0;
+            for (Player player : game.getPlayers()) {
+                if (player.getNumber() != currentPlayer.getNumber()) {
+                    Double averageBenefitIfCoinsAvailable = 0.0;
+                    Integer amountGained = currentPlayer.hasShoppingMall()? card.getAmountGained() + 1 : card.getAmountGained();
+                    //assumption that if a player has a train station they will roll two dice is limited of course
+                    if (player.hasTrainStation()) {
+                        for (int rollValue : card.getRolls()) {
+                            averageBenefitIfCoinsAvailable += amountGained * RollBenefitAnalyzer.diceRollProbabilityTwoDice(rollValue);
+                        }
+                    } else {
+                        for (int rollValue : card.getRolls()) {
+                            if (rollValue <= 6) {
+                                averageBenefitIfCoinsAvailable += amountGained * RollBenefitAnalyzer.SINGLE_ROLL_PROBABILITY;
+                            } else {
+                                //still some benefit long term as they will probably buy train station in future
+                                averageBenefitIfCoinsAvailable += amountGained * RollBenefitAnalyzer.diceRollProbabilityTwoDice(rollValue) * LONG_TERM_FACTOR;
+                            }
                         }
                     }
+                    totalAverageBenefitIfCoinsAvailable += averageBenefitIfCoinsAvailable;
                 }
-                totalAverageBenefitIfCoinsAvailable += averageBenefitIfCoinsAvailable;
+            }
+            Integer competitionForCoins = GameRules.STARTING_STOCK - game.getGameStock().get(card);
+            Double totalAverageBenefit =  totalAverageBenefitIfCoinsAvailable / ((competitionForCoins + 1) * RED_COMPETITION_FACTOR);
+            buyingDecision.setAverageBenefitPerRound(totalAverageBenefit);
+            buyingDecision.getStrategicValue().put(StrategyName.ATTACK_FOCUSED, totalAverageBenefit);
+        } else if (card.isOnPlayersTurn()) { //green and blue benefits
+            Game gameAfterPurchase = game.deepCopy();
+            gameAfterPurchase.getCurrentPlayer().addCard(card);
+            Double totalAverageBenefit = 0.0;
+            for (int rollValue : card.getRolls()) {
+                int amountGained = RollEffectCalculator.calculateGreenAndBlueEffectsForCurrentPlayer(gameAfterPurchase, rollValue) - RollEffectCalculator.calculateGreenAndBlueEffectsForCurrentPlayer(game, rollValue);
+                if (currentPlayer.hasTrainStation() || rollValue > 6) {
+                    totalAverageBenefit += amountGained * RollBenefitAnalyzer.diceRollProbabilityTwoDice(rollValue);
+                } else {
+                    totalAverageBenefit += amountGained * RollBenefitAnalyzer.SINGLE_ROLL_PROBABILITY;
+                }
+                if (card.isOnAnyonesTurn()) {
+                    totalAverageBenefit = totalAverageBenefit * game.getPlayers().size();
+                }
+            }
+            Card greenCardAffected = null;
+            if (card.getCategory() == CardCategory.GRAIN && currentPlayer.getStock().containsKey(Card.FRUIT_AND_VEGETABLE_GARDEN)) {
+                greenCardAffected = Card.FRUIT_AND_VEGETABLE_GARDEN;
+                buyingDecision.getStrategicValue().put(StrategyName.FRUIT_AND_VEG_FOCUSED, GREEN_STRATEGY_BLUE_BENEFIT_FACTOR);
+            }
+            if (card.getCategory() == CardCategory.COW && currentPlayer.getStock().containsKey(Card.CHEESE_FACTORY)) {
+                greenCardAffected = Card.CHEESE_FACTORY;
+                buyingDecision.getStrategicValue().put(StrategyName.CHEESE_FOCUSED, GREEN_STRATEGY_BLUE_BENEFIT_FACTOR);
+            }
+            if (card.getCategory() == CardCategory.GEAR && currentPlayer.getStock().containsKey(Card.FURNITURE_FACTORY)) {
+                greenCardAffected = Card.FURNITURE_FACTORY;
+                buyingDecision.getStrategicValue().put(StrategyName.FACTORY_FOCUSED, GREEN_STRATEGY_BLUE_BENEFIT_FACTOR);
+            }
+            if (greenCardAffected != null) {
+                for (int rollValue : greenCardAffected.getRolls()) {
+                    int amountGained = RollEffectCalculator.calculateGreenAndBlueEffectsForCurrentPlayer(gameAfterPurchase, rollValue) - RollEffectCalculator.calculateGreenAndBlueEffectsForCurrentPlayer(game, rollValue);
+                    totalAverageBenefit += amountGained * RollBenefitAnalyzer.diceRollProbabilityTwoDice(rollValue);
+                }
+            }
+            buyingDecision.setAverageBenefitPerRound(totalAverageBenefit);
+            if (card == Card.FRUIT_AND_VEGETABLE_GARDEN) {
+                buyingDecision.getStrategicValue().put(StrategyName.FRUIT_AND_VEG_FOCUSED, GREEN_STRATEGY_GREEN_FACTOR);
+            } else if (card == Card.CHEESE_FACTORY) {
+                buyingDecision.getStrategicValue().put(StrategyName.CHEESE_FOCUSED, GREEN_STRATEGY_GREEN_FACTOR);
+            } else if (card == Card.FURNITURE_FACTORY) {
+                buyingDecision.getStrategicValue().put(StrategyName.ATTACK_FOCUSED, GREEN_STRATEGY_GREEN_FACTOR);
             }
         }
-        Integer competitionForCoins = GameRules.STARTING_STOCK - game.getGameStock().get(card);
-        Double totalAverageBenefit =  totalAverageBenefitIfCoinsAvailable / ((competitionForCoins + 1) * RED_COMPETITION_FACTOR);
-        buyingDecision.setAverageBenefitPerRound(totalAverageBenefit);
-        buyingDecision.getStrategicValue().put(StrategyName.ATTACK_FOCUSED, totalAverageBenefit);
-    } else if (card.isOnPlayersTurn()) { //green and blue benefits
-        Game gameAfterPurchase = game.deepCopy();
-        gameAfterPurchase.getCurrentPlayer().addCard(card);
-        Double totalAverageBenefit = 0.0;
-        for (int rollValue : card.getRolls()) {
-            int amountGained = RollEffectCalculator.calculateGreenAndBlueEffects(gameAfterPurchase, rollValue) - RollEffectCalculator.calculateGreenAndBlueEffects(game, rollValue);
-            if (currentPlayer.hasTrainStation() || rollValue > 6) {
-                totalAverageBenefit += amountGained * RollBenefitAnalyzer.diceRollProbabilityTwoDice(rollValue);
-            } else {
-                totalAverageBenefit += amountGained * RollBenefitAnalyzer.SINGLE_ROLL_PROBABILITY;
+        if (card.getCategory() == CardCategory.PURPLE) {
+            Integer amountGainedIfCoinsAvailable = 0;
+            if (card == Card.STADIUM) {
+                amountGainedIfCoinsAvailable = card.getAmountGained() * (game.getPlayers().size() - 1);
+            } else if (card == Card.TV_STATION) {
+                amountGainedIfCoinsAvailable = card.getAmountGained();
             }
-            if (card.isOnAnyonesTurn()) {
-                totalAverageBenefit = totalAverageBenefit * game.getPlayers().size();
-            }
+            Double averageAmountGainedPerRound = amountGainedIfCoinsAvailable * RollBenefitAnalyzer.diceRollProbabilityTwoDice(Card.ALL_PURPLE_ROLL) * PURPLE_FACTOR;
+            buyingDecision.setAverageBenefitPerRound(averageAmountGainedPerRound);
+            buyingDecision.getStrategicValue().put(StrategyName.ATTACK_FOCUSED, averageAmountGainedPerRound);
         }
-        Card greenCardAffected = null;
-        if (card.getCategory() == CardCategory.GRAIN && currentPlayer.getStock().containsKey(Card.FRUIT_AND_VEGETABLE_GARDEN)) {
-            greenCardAffected = Card.FRUIT_AND_VEGETABLE_GARDEN;
-            buyingDecision.getStrategicValue().put(StrategyName.FRUIT_AND_VEG_FOCUSED, GREEN_STRATEGY_BLUE_BENEFIT_FACTOR);
-        }
-        if (card.getCategory() == CardCategory.COW && currentPlayer.getStock().containsKey(Card.CHEESE_FACTORY)) {
-            greenCardAffected = Card.CHEESE_FACTORY;
-            buyingDecision.getStrategicValue().put(StrategyName.CHEESE_FOCUSED, GREEN_STRATEGY_BLUE_BENEFIT_FACTOR);
-        }
-        if (card.getCategory() == CardCategory.GEAR && currentPlayer.getStock().containsKey(Card.FURNITURE_FACTORY)) {
-            greenCardAffected = Card.FURNITURE_FACTORY;
-            buyingDecision.getStrategicValue().put(StrategyName.FACTORY_FOCUSED, GREEN_STRATEGY_BLUE_BENEFIT_FACTOR);
-        }
-        if (greenCardAffected != null) {
-            for (int rollValue : greenCardAffected.getRolls()) {
-                int amountGained = RollEffectCalculator.calculateGreenAndBlueEffects(gameAfterPurchase, rollValue) - RollEffectCalculator.calculateGreenAndBlueEffects(game, rollValue);
-                totalAverageBenefit += amountGained * RollBenefitAnalyzer.diceRollProbabilityTwoDice(rollValue);
-            }
-        }
-        buyingDecision.setAverageBenefitPerRound(totalAverageBenefit);
-        if (card == Card.FRUIT_AND_VEGETABLE_GARDEN) {
-            buyingDecision.getStrategicValue().put(StrategyName.FRUIT_AND_VEG_FOCUSED, GREEN_STRATEGY_GREEN_FACTOR);
-        } else if (card == Card.CHEESE_FACTORY) {
-            buyingDecision.getStrategicValue().put(StrategyName.CHEESE_FOCUSED, GREEN_STRATEGY_GREEN_FACTOR);
-        } else if (card == Card.FURNITURE_FACTORY) {
-            buyingDecision.getStrategicValue().put(StrategyName.ATTACK_FOCUSED, GREEN_STRATEGY_GREEN_FACTOR);
-        }
-    }
-    if (card.getCategory() == CardCategory.PURPLE) {
-        Integer amountGainedIfCoinsAvailable = 0;
-        if (card == Card.STADIUM) {
-            amountGainedIfCoinsAvailable = card.getAmountGained() * (game.getPlayers().size() - 1);
-        } else if (card == Card.TV_STATION) {
-            amountGainedIfCoinsAvailable = card.getAmountGained();
-        }
-        Double averageAmountGainedPerRound = amountGainedIfCoinsAvailable * RollBenefitAnalyzer.diceRollProbabilityTwoDice(Card.ALL_PURPLE_ROLL) * PURPLE_FACTOR;
-        buyingDecision.setAverageBenefitPerRound(averageAmountGainedPerRound);
-        buyingDecision.getStrategicValue().put(StrategyName.ATTACK_FOCUSED, averageAmountGainedPerRound);
-    }
-    return buyingDecision;
+        return buyingDecision;
     }
 
     private boolean worthRollingSingleDice() {
-        Double averageGainOneDie = RollBenefitAnalyzer.getAverageGainForOneDieRolled(allRollEffects, game.getCurrentPlayerNumber());
-        Double averageGainTwoDice = RollBenefitAnalyzer.getAverageGainForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
-        Integer bestCoinTwoDice = RollBenefitAnalyzer.getBestCaseScenarioForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
-        Double otherAverageGainOneDie = RollBenefitAnalyzer.getAverageGainForOneDieRolled(allRollEffects, game.getCurrentPlayerNumber());
-        Double otherAverageGainTwoDie = RollBenefitAnalyzer.getAverageGainForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
+        Double averageGainOneDie = RollBenefitAnalyzer.calculateAverageGainForOneDieRolled(allRollEffects, game.getCurrentPlayerNumber());
+        Double averageGainTwoDice = RollBenefitAnalyzer.calculateAverageGainForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
+        Integer bestCoinTwoDice = RollBenefitAnalyzer.calculateBestCaseScenarioForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
+        Double otherAverageGainOneDie = RollBenefitAnalyzer.calculateAverageGainForOneDieRolled(allRollEffects, game.getCurrentPlayerNumber());
+        Double otherAverageGainTwoDie = RollBenefitAnalyzer.calculateAverageGainForTwoDiceRolled(allRollEffects, game.getCurrentPlayerNumber());
         return strategy.rollSingle(averageGainOneDie,averageGainTwoDice,bestCoinTwoDice,otherAverageGainOneDie, otherAverageGainTwoDie);
     }
 

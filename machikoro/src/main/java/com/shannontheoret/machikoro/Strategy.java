@@ -61,9 +61,6 @@ public class Strategy {
         for (BuyingDecision buyingDecision : buyingDecisions) {
             buyingDecision.setCompositeScore(calculateCompositeScore(buyingDecision));
         }
-        List<BuyingDecision> prioritizedBuyingDecisions = new ArrayList<>(buyingDecisions);
-        prioritizedBuyingDecisions.sort(new BuyingDecisionComparator());
-        boolean saveUp = false;
         BuyingDecision noPuchase = BuyingDecision.endTurn();
         BuyingDecision bestAffordablePurchase = noPuchase;
         BuyingDecision bestCheapPurchase = noPuchase;
