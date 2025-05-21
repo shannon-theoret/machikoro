@@ -7,7 +7,7 @@ const props = defineProps({
         type: Object,
         required: true
     },
-    isBuyStep: {
+    isBuyStepForNonNPC: {
         type: Boolean,
         default: false
     }
@@ -17,13 +17,13 @@ const emit = defineEmits(['select-card']);
 
 const selectedCard = ref(null);
 
-const isOpen = ref(props.isBuyStep);
+const isOpen = ref(props.isBuyStepForNonNPC);
 
 const toggleOpen = () => {
   isOpen.value = !isOpen.value;
 };
 
-watch(() => props.isBuyStep, (newVal) => {
+watch(() => props.isBuyStepForNonNPC, (newVal) => {
   isOpen.value = newVal;
   if (!newVal) {
     selectedCard.value = null;
@@ -31,7 +31,7 @@ watch(() => props.isBuyStep, (newVal) => {
   }
 });
 
-watch(() => props.isBuyStep, (newVal) => {
+watch(() => props.isBuyStepForNonNPC, (newVal) => {
   if (!newVal) {
     selectedCard.value = null;
     emit('select-card', null);
@@ -39,7 +39,7 @@ watch(() => props.isBuyStep, (newVal) => {
 });
 
 const handleCardClick = (cardName) => {
-  if (!props.isBuyStep) return; // Only allow selection during buy step
+  if (!props.isBuyStepForNonNPC) return; // Only allow selection during buy step
   if (selectedCard.value === cardName) {
     selectedCard.value = null;
     emit('select-card', null); // deselect
@@ -55,7 +55,7 @@ const handleCardClick = (cardName) => {
     <div class="box game-stock-container">
         <p class="title is-4 is-pulled-left">Game Stock</p>
         <span class="arrow-icon" @click="toggleOpen">
-          {{ isOpen ? '▶' : '▼' }}
+          {{ isOpen ? '▼' : '▶' }}
         </span>
         <div v-show="isOpen" class="gameStock">
             <Card v-for="(quantity, card) in gameStock" :key="card" :cardName="card" :quantity="quantity" @click="handleCardClick" :selected="card === selectedCard"/>

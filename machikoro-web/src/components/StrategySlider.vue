@@ -1,208 +1,35 @@
-<script setup>
-
-</script>
-
 <template>
-    <div class="strategy-slider">
-			<input type="radio" name="amount" value="0" required>
-			<label for="0" data-amount="Not Used"></label>
-			<input type="radio" name="amount" value="2" required>
-			<label for="1" data-amount="Minimal"></label>
-			<input type="radio" name="amount" value="2" required>
-			<label for="2" data-amount="Average"></label>
-			<input type="radio" name="debt-amount" value="2" required>
-			<label for="3" data-debt-amount="Intense"></label>
-            <div id="debt-amount-pos"></div>
-	</div>    
-</template>
-<style>
-$number-of-options: 5;
-html, body {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-family: 'Nunito', sans-serif;
-	color: #000;
-	user-select: none;
-}
-#form-wrapper {
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-}
-form {
-	width: 90%;
-	max-width: 500px;
-	#form-title {
-		margin-top: 0;
-		font-weight: 400;
-		text-align: center;
-	}
-	#debt-amount-slider {
-		display: flex;
-		flex-direction: row;
-		align-content: stretch;
-		position: relative;
-		width: 100%;
-		height: 50px;
-		user-select: none;
-		&::before {
-			content: " ";
-			position: absolute;
-			height: 2px;
-			width: 100%;
-			width: calc(100% * (#{$number-of-options - 1} / #{$number-of-options}));
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			background: #000;
-		}
-		input, label {
-			box-sizing: border-box;
-			flex: 1;
-			user-select: none;
-			cursor: pointer;
-		}
-		label {
-			display: inline-block;
-			position: relative;
-			width: 20%;
-			height: 100%;
-			user-select: none;
-			&::before {
-				content: attr(data-debt-amount);
-				position: absolute;
-				left: 50%;
-				padding-top: 10px;
-				transform: translate(-50%, 45px);
-				font-size: 14px;
-				letter-spacing: 0.4px;
-				font-weight: 400;
-				white-space: nowrap;
-				opacity: 0.85;
-				transition: all 0.15s ease-in-out;
-			}
-			&::after {
-				content: " ";
-				position: absolute;
-				left: 50%;
-				top: 50%;
-				transform: translate(-50%, -50%);
-				width: 30px;
-				height: 30px;
-				border: 2px solid #000;
-				background: #fff;
-				border-radius: 50%;
-				pointer-events: none;
-				user-select: none;
-				z-index: 1;
-				cursor: pointer;
-				transition: all 0.15s ease-in-out;
-			}
-			&:hover::after {
-				transform: translate(-50%, -50%) scale(1.25);
-			}
-		}
-		input {
-			display: none;
-			&:checked {
-				+ label::before {
-					font-weight: 800;
-					opacity: 1;
-				}
-				+ label::after {
-					border-width: 4px;
-					transform: translate(-50%, -50%) scale(0.75);
-				}
-				~ #debt-amount-pos {
-					opacity: 1;
-				}
-				@for $i from 1 through $number-of-options {
-					&:nth-child(#{$i * 2 - 1}) ~ #debt-amount-pos {
-						left: #{($i * 20%) - 10%};
-					}
-				}
-			}
-		}
-		#debt-amount-pos {
-			display: block;
-			position: absolute;
-			top: 50%;
-			width: 12px;
-			height: 12px;
-			background: #000;
-			border-radius: 50%;
-			transition: all 0.15s ease-in-out;
-			transform: translate(-50%, -50%);
-			border: 2px solid #fff;
-			opacity: 0;
-			z-index: 2;
-		}
-	}
-	&:valid {
-		#debt-amount-slider {
-			input {
-				+ label::before {
-					transform: translate(-50%, 45px) scale(0.9);
-					transition: all 0.15s linear;
-				}
-				&:checked + label::before {
-					transform: translate(-50%, 45px) scale(1.1);
-					transition: all 0.15s linear;
-				}
-			}
-		}
-	}
-	& + button {
-		display: block;
-		position: relative;
-		margin: 56px auto 0;
-		padding: 10px 20px;
-		appearance: none;
-		transition: all 0.15s ease-in-out;
-		font-family: inherit;
-		font-size: 24px;
-		font-weight: 600;
-		background: #fff;
-		border: 2px solid #000;
-		border-radius: 8px;
-		outline: 0;
-		user-select: none;
-		cursor: pointer;
-		&:hover {
-			// transform: scale(1.1);
-			background: #000;
-			color: #fff;
-			&:active {
-				transform: scale(0.9);
-			}
-		}
-		&:focus {
-			background: #4caf50;
-			border-color: #4caf50;
-			color: #fff;
-			pointer-events: none;
-			&::before {
-				animation: spin 1s linear infinite;
-			}
-		}
-		&::before {
-			display: inline-block;
-			width: 0;
-			opacity: 0;
-			content: "\f3f4";
-			font-family: "Font Awesome 5 Pro";
-			font-weight: 900;
-			margin-right: 0;
-			transform: rotate(0deg);
-		}
-	}
-	&:invalid + button {
-		pointer-events: none;
-		opacity: 0.25;
-	}
-}
-</style>
+	<label>{{label}}</label>
+	<v-slider
+	  v-model="strategyLevel"
+	  :min="0"
+	  :max="3"
+	  :step="1"
+	  :ticks="tickLabels"
+	  show-ticks="always"
+	  class="strategy-slider"
+	/>
+  </template>
+  
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  modelValue: Number,
+  label: String,
+})
+
+const emit = defineEmits(['update:modelValue'])
+
+const strategyLevel = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val),
+});
+
+const tickLabels = {
+    	0: 'Not Used',
+    	1: 'Minimal',
+    	2: 'Average',
+    	3: 'Intense'
+  	}
+</script>

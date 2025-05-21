@@ -3,6 +3,7 @@ import Card from './Card.vue';
 import Coin from './Coin.vue';
 import { landmarkMap } from '@/landmarkMap';
 import Landmark from './Landmark.vue';
+import robot from '../assets/robot.png';
 
 import { defineProps, defineEmits, ref, computed, watch } from 'vue';
 const props = defineProps({
@@ -57,12 +58,13 @@ const handleLandmarkClick = (landmark) => {
 
 <template>
     <div class="player box" :class="{ 'isCurrentPlayer': isCurrentPlayer }">
-        <p class="title is-4">{{ player.name }}<Coin class="is-float-right" :quantity="player.coins"></Coin></p>
+        <p class="title is-4">{{ player.name }}<img v-if="player.npc" :src="robot" alt="robot" class="robot"/><Coin class="is-float-right" :quantity="player.coins"></Coin></p>
         <div class="playerCards">
             <Card v-for="(quantity, card) in player.stock" :key="card" :cardName="card" :quantity="quantity" />
         </div>
         <div class="playerLandmarks">
             <Landmark v-for="(constructed, landmark) in computedLandmarks" :key="landmark" :landmark="landmark" :constructed="constructed" :selected="landmark===selectedLandmark" @click="handleLandmarkClick" />
         </div>
+        {{ player.strategy }}
     </div>
 </template>

@@ -2,7 +2,7 @@
 import Header from './components/Header.vue'
 import Game from './components/Game.vue'
 import api from '@/api/axiosInstance';
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import NewGame from './components/NewGame.vue';
 
 const game = ref({});
@@ -13,6 +13,7 @@ const gameCode = ref("");
 const newGame = () => {
   game.value = {};
   toStart.value = true;
+  error.value = "";
 }
 
 const beginGame = async (players) => {
@@ -24,7 +25,8 @@ const beginGame = async (players) => {
   const playerData = players.map((player, index) => ({
     playerNumber: index + 1,
     playerName: player.name,
-    isNPC: player.isNPC
+    isNPC: player.isNPC,
+    strategy: JSON.parse(JSON.stringify(player.strategy))
   }));
   await makeApiCall('/newGame', playerData, null);
   gameCode.value = game.value.code;
@@ -106,6 +108,15 @@ const completeTurn = async () => {
   }
 }
 
+const makeNPCMove = async () => {
+  try {
+    await makeApiCall('/makeNPCMove', null, { gameCode: gameCode.value });
+  } catch (err) {
+    console.log(err);
+    error.value = err.response?.data?.message || "An unknown error occurred.";
+  }
+}
+
 const testStuff = async () => {
   try {
       const response = await api.get('/testStuff', {
@@ -147,7 +158,7 @@ onMounted(() => {
 <template>
   <Header :gameCode="gameCode" @new-game="newGame" @open-game="openGame"/>
   <div class="machikoro">
-  <button @click="testStuff">Test Stuff</button>
+  <!--<button @click="testStuff">Test Stuff</button>-->
     {{ error }}
     <NewGame v-if="toStart" @begin-game="beginGame"></NewGame>
     <Game 
@@ -160,6 +171,7 @@ onMounted(() => {
       @purchase-card="purchaseCard" 
       @purchase-landmark="purchaseLandmark" 
       @complete-turn="completeTurn"
+      @make-npc-move="makeNPCMove"
       @error="updateError">
     </Game>
   </div>

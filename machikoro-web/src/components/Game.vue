@@ -22,6 +22,12 @@ const sortedPlayers = computed(() => {
   return [...props.game.players].sort((a, b) => a.number - b.number);
 });
 
+const currentPlayer = computed(() => {
+  return props.game.players.find(
+    (player) => player.number === props.game.currentPlayerNumber
+  );
+});
+
 const otherPlayers = computed(() => {
   return props.game.players.filter(player => player.number !== props.game.currentPlayerNumber);
 });
@@ -52,8 +58,8 @@ const handlePurchaseLandmark = () => {
     }
 };
 
-const isBuyStep = computed(() => {
-    return props.game.step === 'BUY';
+const isBuyStepForNonNPC = computed(() => {
+  return props.game.step === 'BUY' && !currentPlayer.value?.npc;
 });
 
 </script>
@@ -63,7 +69,7 @@ const isBuyStep = computed(() => {
         <div class="top-info">
             <PlayerMoves 
             :step="game.step" 
-            :player="sortedPlayers[game.currentPlayerNumber - 1]" 
+            :player="currentPlayer" 
             :otherPlayers="otherPlayers" 
             @roll="emit('roll')" 
             @roll-two-dice="emit('roll-two-dice')" 
@@ -71,13 +77,14 @@ const isBuyStep = computed(() => {
             @steal="emit('steal', playerToStealFrom)"
             @purchase-card="handlePurchaseCard" 
             @purchase-landmark="handlePurchaseLandmark" 
-            @complete-turn="emit('complete-turn')">
+            @complete-turn="emit('complete-turn')"
+            @make-npc-move="emit('make-npc-move')">
             </PlayerMoves>
             <Dice :die1="game.die1" :die2="game.die2"></Dice>
         </div>
-        <GameStock :gameStock="game.gameStock" @select-card="handleSelectCard" :isBuyStep="isBuyStep"/>
+        <GameStock :gameStock="game.gameStock" @select-card="handleSelectCard" :isBuyStepForNonNPC="isBuyStepForNonNPC"/>
         <div class="players">
-            <Player v-for="player in sortedPlayers" @select-landmark="handleSelectLandmark" :key="player.number" :player="player" :isCurrentPlayer="player.number == game.currentPlayerNumber" :isBuyStep="isBuyStep" />
+            <Player v-for="player in sortedPlayers" @select-landmark="handleSelectLandmark" :key="player.number" :player="player" :isCurrentPlayer="player.number == game.currentPlayerNumber" :isBuyStep="isBuyStepForNonNPC" />
         </div>    
     </div>       
 </template>

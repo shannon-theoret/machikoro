@@ -1,9 +1,14 @@
 package com.shannontheoret.machikoro.dto;
 
+import com.shannontheoret.machikoro.StrategyName;
+
+import java.util.Map;
+
 public class PlayerDTO {
     private Integer playerNumber;
     private String playerName;
     private Boolean isNPC;
+    private Map<StrategyName, Integer> strategy;
 
     public Integer getPlayerNumber() {
         return playerNumber;
@@ -27,5 +32,13 @@ public class PlayerDTO {
 
     public void setNPC(Boolean NPC) {
         isNPC = NPC;
+    }
+
+    public Map<StrategyName, Integer> getStrategy() {
+        return strategy;
+    }
+
+    public void setStrategy(Map<StrategyName, Integer> strategy) {
+        this.strategy = strategy;
     }
 }

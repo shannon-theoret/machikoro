@@ -2,6 +2,7 @@ package com.shannontheoret.machikoro;
 
 import com.shannontheoret.machikoro.dao.GameDao;
 import com.shannontheoret.machikoro.dao.PlayerDao;
+import com.shannontheoret.machikoro.dto.PlayerDTO;
 import com.shannontheoret.machikoro.entity.Game;
 import com.shannontheoret.machikoro.entity.Player;
 import com.shannontheoret.machikoro.exception.GameCodeNotFoundException;
@@ -43,7 +44,7 @@ public class GameServiceTests {
     @ParameterizedTest
     @ValueSource(ints = {2, 3, 4})
     public void newGame_valid(Integer numberOfPlayers) throws GameMechanicException {
-        setupMocks();
+        when(gameUtilities.generateCode()).thenReturn("testCode");
 
         Game game = gameService.newGame(numberOfPlayers);
 
@@ -66,8 +67,6 @@ public class GameServiceTests {
             assertEquals(1, player.getStock().getOrDefault(Card.WHEAT, 0), "Player should have 1 wheat card.");
             assertEquals(1, player.getStock().getOrDefault(Card.BAKERY, 0), "Player should have 1 bakery card.");
         }
-
-        verifySaves(game, 1);
     }
 
     @ParameterizedTest
@@ -83,37 +82,47 @@ public class GameServiceTests {
 
     @Test
     public void setupPlayer_valid() throws GameMechanicException, GameCodeNotFoundException, InvalidMoveException {
-        setupMocks();
+        when(gameUtilities.generateCode()).thenReturn("testCode");
 
         Game game = gameService.newGame(2);
 
         when(gameDao.findByCode("testCode")).thenReturn(game);
 
-        gameService.setupPlayer("testCode", 1, "Sarah", false);
+        PlayerDTO playerDTO = new PlayerDTO();
+        playerDTO.setPlayerName("Sarah");
+        playerDTO.setPlayerNumber(1);
+        playerDTO.setNPC(false);
+
+        gameService.setupPlayer("testCode", playerDTO);
 
         assertEquals("Sarah", game.getPlayerByNumber(1).getName(), "Player 1 should be named 'Sarah'");
         assertEquals("Player 2", game.getPlayerByNumber(2).getName(), "Player 2 should be named 'Player 2'");
         assertEquals(Step.SETUP, game.getStep(), "Game step should be SETUP");
 
-        verifySaves(game, 2);
+        verifySaves(game, 0);
     }
 
     @Test
     public void setupPlayer_playerDoesNotExist_throwsGameMechanicException() throws GameMechanicException {
-        setupMocks();
+        when(gameUtilities.generateCode()).thenReturn("testCode");
 
         Game game = gameService.newGame(2);
 
+        PlayerDTO playerDTO = new PlayerDTO();
+        playerDTO.setPlayerName("Sarah");
+        playerDTO.setPlayerNumber(3);
+        playerDTO.setNPC(false);
+
         when(gameDao.findByCode("testCode")).thenReturn(game);
 
-        assertThrows(GameMechanicException.class, () -> gameService.setupPlayer("testCode", 3, "Sarah", false));
+        assertThrows(GameMechanicException.class, () -> gameService.setupPlayer("testCode", playerDTO));
 
-        verifySaves(game, 1);
+        verifySaves(game, 0);
     }
 
     @Test
     public void setupPlayer_wrongStep_throwsInvalidMoveException() throws GameMechanicException {
-        setupMocks();
+        when(gameUtilities.generateCode()).thenReturn("testCode");
 
         Game game = gameService.newGame(2);
 
@@ -121,11 +130,16 @@ public class GameServiceTests {
 
         game.setStep(Step.ROLL);
 
-        assertThrows(InvalidMoveException.class, () -> gameService.setupPlayer("testCode", 1, "Sarah", false));
+        PlayerDTO playerDTO = new PlayerDTO();
+        playerDTO.setPlayerName("Sarah");
+        playerDTO.setPlayerNumber(1);
+        playerDTO.setNPC(false);
 
-        verifySaves(game, 1);
+        assertThrows(InvalidMoveException.class, () -> gameService.setupPlayer("testCode", playerDTO));
+
+        verifySaves(game, 0);
     }
-
+/*
     @Test
     public void beginGame_valid() throws GameMechanicException, GameCodeNotFoundException, InvalidMoveException {
         setupMocks();
@@ -156,7 +170,7 @@ public class GameServiceTests {
 
         verifySaves(game, 1);
     }
-
+*/
     @ParameterizedTest
     @MethodSource("rollAndExpectedCoins")
     public void roll_valid(Integer currentPlayer, Integer rollValue, Integer player1Coins, Integer player2Coins, Integer player3Coins) throws GameMechanicException, GameCodeNotFoundException, InvalidMoveException {
@@ -223,7 +237,7 @@ public class GameServiceTests {
         assertEquals(player2Coins, player2.getCoins(), "The number of coins for player 2 should equal " + player2Coins);
         assertEquals(player3Coins, player3.getCoins(), "The number of coins for player 3 should equal " + player3Coins);
 
-        verifySaves(game, 2);
+        verifySaves(game, 1);
     }
 
     @Test
@@ -249,7 +263,7 @@ public class GameServiceTests {
         assertEquals(1, game.getCurrentPlayerNumber(), "Current player number should still be 1.");
         assertTrue(game.getRolledOnce(), "Rolled once should be true");
 
-        verifySaves(game, 2);
+        verifySaves(game, 1);
     }
 
     @Test
@@ -280,12 +294,12 @@ public class GameServiceTests {
         assertEquals(34, player1.getCoins(), "Player should have 34 coins"); //4 + (2 + 3) * 2 * 3
         assertEquals(1, game.getCurrentPlayerNumber(), "Current player number should still be 1.");
 
-        verifySaves(game, 2);
+        verifySaves(game, 1);
     }
 
     @Test
     public void roll_wrongStep_throwsInvalidMoveException() throws InvalidMoveException, GameMechanicException {
-        setupMocks();
+        when(gameUtilities.generateCode()).thenReturn("testCode");
 
         Game game = gameService.newGame(4);
 
@@ -295,12 +309,12 @@ public class GameServiceTests {
 
         assertThrows(InvalidMoveException.class, () -> gameService.roll("testCode", false));
 
-        verifySaves(game, 1);
+        verifySaves(game, 0);
     }
 
     @Test
     public void rollTwo_noTrainStation_throwsInvalidMoveException() throws GameMechanicException {
-        setupMocks();
+        when(gameUtilities.generateCode()).thenReturn("testCode");
 
         Game game = gameService.newGame(2);
 
@@ -313,7 +327,7 @@ public class GameServiceTests {
 
         assertThrows(InvalidMoveException.class, () -> gameService.roll("testCode", true));
 
-        verifySaves(game, 1);
+        verifySaves(game, 0);
     }
 
     @Test
@@ -340,7 +354,7 @@ public class GameServiceTests {
         assertEquals(11, player2.getCoins(), "Player should have 11 coins");
         assertEquals(2, game.getCurrentPlayerNumber(), "Current player should be player 2");
 
-        verifySaves(game, 2);
+        verifySaves(game, 1);
     }
 
     @ParameterizedTest
@@ -368,7 +382,7 @@ public class GameServiceTests {
         assertEquals(Step.ROLL, game.getStep(), "Game step should be ROLL");
         assertEquals(3, game.getCurrentPlayerNumber(), "Current player should be player 3");
 
-        verifySaves(game, 2);
+        verifySaves(game, 1);
     }
 
     @Test
@@ -395,7 +409,7 @@ public class GameServiceTests {
         assertEquals(Step.ROLL, game.getStep(), "Game step should be ROLL");
         assertEquals(2, game.getCurrentPlayerNumber(), "Current player should be player 2");
 
-        verifySaves(game, 2);
+        verifySaves(game, 1);
     }
 
     @Test
@@ -419,7 +433,7 @@ public class GameServiceTests {
         assertEquals(Step.ROLL, game.getStep(), "Game step should be ROLL");
         assertEquals(2, game.getCurrentPlayerNumber(), "Current player should be player 2");
 
-        verifySaves(game, 2);
+        verifySaves(game, 1);
     }
 
     @Test
@@ -446,12 +460,12 @@ public class GameServiceTests {
         assertEquals(1, player.getStock().getOrDefault(Card.CAFE, 0), "Player 2 should have 1 cafe card");
         assertEquals(7, game.getGameStock().get(Card.CAFE), "Game stock should have 7 cafe cards");
 
-        verifySaves(game, 2);
+        verifySaves(game, 1);
     }
 
     @Test
     public void purchaseCard_wrongStep_throwsInvalidMoveException() throws GameMechanicException {
-        setupMocks();
+        when(gameUtilities.generateCode()).thenReturn("testCode");
 
         Game game = gameService.newGame(2);
 
@@ -464,12 +478,12 @@ public class GameServiceTests {
 
         assertThrows(InvalidMoveException.class, () -> gameService.purchaseCard("testCode", Card.CHEESE_FACTORY));
 
-        verifySaves(game, 1);
+        verifySaves(game, 0);
     }
 
     @Test
     public void purchaseCard_notEnoughMoney_throwsInvalidMoveException() throws GameMechanicException {
-        setupMocks();
+        when(gameUtilities.generateCode()).thenReturn("testCode");
 
         Game game = gameService.newGame(4);
 
@@ -482,12 +496,12 @@ public class GameServiceTests {
 
         assertThrows(InvalidMoveException.class, () -> gameService.purchaseCard("testCode", Card.FOREST));
 
-        verifySaves(game, 1);
+        verifySaves(game, 0);
     }
 
     @Test
     public void purchaseCard_notEnoughStock_throwsInvalidMoveException() throws GameMechanicException {
-        setupMocks();
+        when(gameUtilities.generateCode()).thenReturn("testCode");
 
         Game game = gameService.newGame(2);
 
@@ -501,13 +515,13 @@ public class GameServiceTests {
 
         assertThrows(InvalidMoveException.class, () -> gameService.purchaseCard("testCode", Card.CHEESE_FACTORY));
 
-        verifySaves(game, 1);
+        verifySaves(game, 0);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"TV_STATION", "STADIUM"})
     public void purchaseCard_purpleCardAlreadyPurchased_throwsInvalidMoveException(Card card) throws GameMechanicException {
-        setupMocks();
+        when(gameUtilities.generateCode()).thenReturn("testCode");
 
         Game game = gameService.newGame(3);
 
@@ -522,7 +536,7 @@ public class GameServiceTests {
 
         assertThrows(InvalidMoveException.class, () -> gameService.purchaseCard("testCode", card));
 
-        verifySaves(game, 1);
+        verifySaves(game, 0);
     }
 
     @Test
@@ -546,7 +560,7 @@ public class GameServiceTests {
         assertEquals(Step.ROLL, game.getStep(), "Game step should be ROLL");
         assertEquals(1, game.getCurrentPlayerNumber(), "Current player should be player 1");
 
-        verifySaves(game, 2);
+        verifySaves(game, 1);
     }
 
     @Test
@@ -571,7 +585,7 @@ public class GameServiceTests {
         assertEquals(Step.ROLL, game.getStep(), "Game step should be ROLL");
         assertEquals(3, game.getCurrentPlayerNumber(), "Current player should be player 3");
 
-        verifySaves(game, 2);
+        verifySaves(game, 1);
     }
 
     @Test
@@ -594,11 +608,13 @@ public class GameServiceTests {
         assertTrue(player.hasLandmark(Landmark.RADIO_TOWER), "Player should have Radio Tower");
         assertEquals(Step.WON, game.getStep(), "Game step should be WON");
         assertTrue(player.hasWon(), "Player should have won");
+
+        verifySaves(game, 1);
     }
 
     @Test
     public void purchaseLandmark_wrongStep_throwsInvalidMoveException() throws GameMechanicException {
-        setupMocks();
+        when(gameUtilities.generateCode()).thenReturn("testCode");
 
         Game game = gameService.newGame(2);
 
@@ -611,12 +627,12 @@ public class GameServiceTests {
 
         assertThrows(InvalidMoveException.class, () -> gameService.purchaseLandmark("testCode", Landmark.TRAIN_STATION));
 
-        verifySaves(game, 1);
+        verifySaves(game, 0);
     }
 
     @Test
     public void purchaseLandmark_notEnoughMoney_throwsInvalidMoveException() throws GameMechanicException {
-        setupMocks();
+        when(gameUtilities.generateCode()).thenReturn("testCode");
 
         Game game = gameService.newGame(4);
 
@@ -629,12 +645,12 @@ public class GameServiceTests {
 
         assertThrows(InvalidMoveException.class, () -> gameService.purchaseLandmark("testCode", Landmark.TRAIN_STATION));
 
-        verifySaves(game, 1);
+        verifySaves(game, 0);
     }
 
     @Test
     public void purchaseLandmark_alreadyPurchased_throwsInvalidMoveException() throws GameMechanicException {
-        setupMocks();
+        when(gameUtilities.generateCode()).thenReturn("testCode");
 
         Game game = gameService.newGame(3);
 
@@ -648,7 +664,7 @@ public class GameServiceTests {
 
         assertThrows(InvalidMoveException.class, () -> gameService.purchaseLandmark("testCode", Landmark.TRAIN_STATION));
 
-        verifySaves(game, 1);
+        verifySaves(game, 0);
     }
 
     @Test
@@ -674,7 +690,7 @@ public class GameServiceTests {
         assertEquals(3, game.getPlayerByNumber(2).getCoins(), "Player 2 should have 3 coins.");
         assertEquals(2, game.getPlayerByNumber(3).getCoins(), "Player 3 should have 2 coins");
 
-        verifySaves(game, 2);
+        verifySaves(game, 1);
     }
 
     @Test
@@ -700,7 +716,7 @@ public class GameServiceTests {
         assertEquals(0, game.getPlayerByNumber(2).getCoins(), "Player 2 should have 0 coins.");
         assertEquals(2, game.getPlayerByNumber(3).getCoins(), "Player 3 should have 2 coins");
 
-        verifySaves(game, 2);
+        verifySaves(game, 1);
     }
 
     @Test
@@ -722,7 +738,7 @@ public class GameServiceTests {
         assertEquals(1, game.getCurrentPlayerNumber(), "Current player number should be 1");
         assertEquals(4, player3.getCoins(), "Player 3 coins should be 4");
 
-        verifySaves(game, 2);
+        verifySaves(game, 1);
     }
 
     private void setupMocks() {

@@ -1,6 +1,7 @@
 package com.shannontheoret.machikoro.entity;
 
 import com.shannontheoret.machikoro.*;
+import com.shannontheoret.machikoro.dto.PlayerDTO;
 import com.shannontheoret.machikoro.exception.GameMechanicException;
 import jakarta.persistence.*;
 
@@ -66,8 +67,7 @@ public class Player {
     private Map<StrategyName, Integer> strategy;
 
     public Player() {
-        addCard(Card.WHEAT);
-        addCard(Card.BAKERY);
+        addStartingCards();
     }
 
     public Player(Integer number) throws GameMechanicException {
@@ -75,8 +75,28 @@ public class Player {
             throw new GameMechanicException("Cannot have a player number greater than 4.");
         }
         this.number = number;
-        addCard(Card.WHEAT);
-        addCard(Card.BAKERY);
+        addStartingCards();
+    }
+
+    public Player(PlayerDTO playerDTO) {
+        this.number = playerDTO.getPlayerNumber();
+        this.name = playerDTO.getPlayerName();
+        this.npc = playerDTO.getIsNPC();
+        if (npc) {
+            this.strategy = playerDTO.getStrategy();
+        }
+        addStartingCards();
+    }
+
+    public void updateFromDTO(PlayerDTO playerDTO) {
+        this.number = playerDTO.getPlayerNumber();
+        if (playerDTO.getPlayerName().length() > 0) {
+            this.name = playerDTO.getPlayerName();
+        }
+        this.npc = playerDTO.getIsNPC();
+        if (npc) {
+            this.strategy = playerDTO.getStrategy();
+        }
     }
 
     public Long getId() {
@@ -207,11 +227,20 @@ public class Player {
         copy.setName(this.name);
         copy.setCoins(this.coins);
         copy.setNpc(this.npc);
-        copy.strategy = new EnumMap<>(this.strategy);
-        copy.landmarks = EnumSet.copyOf(this.landmarks);
+        if (this.strategy != null && !this.strategy.isEmpty()) {
+            copy.strategy = new EnumMap<>(this.strategy);
+        }
+        copy.landmarks = this.landmarks.isEmpty()
+                ? EnumSet.noneOf(Landmark.class)
+                : EnumSet.copyOf(this.landmarks);
 
         copy.stock = new EnumMap<>(this.stock);
 
         return copy;
+    }
+
+    private void addStartingCards() {
+        addCard(Card.WHEAT);
+        addCard(Card.BAKERY);
     }
 }

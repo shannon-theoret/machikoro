@@ -3,7 +3,7 @@ import { ref, defineEmits} from 'vue'
 
 const inputCode = ref("");
 
-const emit = defineEmits(["start-game", "open-game"]);
+const emit = defineEmits(["new-game", "open-game"]);
 
 defineProps({
     gameCode: {

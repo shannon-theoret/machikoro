@@ -13,11 +13,24 @@
   display: flex;
   gap: 30px;
   flex-direction: column;
+  align-items: center;
 }
 
 .player-input {
   display: flex;
   flex-direction: column;
+  width: 500px;
+}
+
+.strategy-input {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.strategy-input h2 {
+  font-weight: bold;
 }
 
 .game {
@@ -214,4 +227,9 @@
 
 .instructions {
   margin: 25px;
+}
+
+.robot {
+  width: 20px;
+  margin-left: 10px;
 }

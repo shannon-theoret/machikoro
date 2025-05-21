@@ -3,6 +3,7 @@ package com.shannontheoret.machikoro.service;
 import com.shannontheoret.machikoro.*;
 import com.shannontheoret.machikoro.dao.GameDao;
 import com.shannontheoret.machikoro.dao.PlayerDao;
+import com.shannontheoret.machikoro.dto.PlayerDTO;
 import com.shannontheoret.machikoro.entity.Game;
 import com.shannontheoret.machikoro.entity.Player;
 import com.shannontheoret.machikoro.exception.GameCodeNotFoundException;
@@ -63,30 +64,34 @@ public class GameService {
             }
         }
         game.setStep(Step.SETUP);
-        save(game);
         return game;
     }
 
     @Transactional
-    public Game setupPlayer(String code, Integer number, String name, Boolean isNPC) throws GameCodeNotFoundException, GameMechanicException, InvalidMoveException {
+    public Game setupPlayer(String code, PlayerDTO playerDTO) throws GameCodeNotFoundException, GameMechanicException, InvalidMoveException {
         Game game = findByCode(code);
         if (game.getStep() != Step.SETUP) {
             throw new InvalidMoveException("Game has already begun");
         }
-        Player player = game.getPlayerByNumber(number);
-        if (name.length() > 0) {
-            player.setName(name);
-        }
-        player.setNpc(isNPC);
-        save(game);
+        Player player = game.getPlayerByNumber(playerDTO.getPlayerNumber());
+        player.updateFromDTO(playerDTO);
         return game;
     }
 
+    public Game setupPlayer(Game game, PlayerDTO playerDTO) throws GameCodeNotFoundException, GameMechanicException, InvalidMoveException {
+            if (game.getStep() != Step.SETUP) {
+                throw new InvalidMoveException("Game has already begun");
+            }
+            Player player = game.getPlayerByNumber(playerDTO.getPlayerNumber());
+            player.updateFromDTO(playerDTO);
+            return game;
+    }
+
     @Transactional
-    public Game beginGame(String code) throws GameCodeNotFoundException, InvalidMoveException, GameMechanicException {
-        Game game = findByCode(code);
-        if (game.getStep() != Step.SETUP) {
-            throw new InvalidMoveException("Game has already begun");
+    public Game beginGame(List<PlayerDTO> players) throws GameCodeNotFoundException, InvalidMoveException, GameMechanicException {
+        Game game = newGame(players.size());
+        for (PlayerDTO player : players) {
+            setupPlayer(game, player);
         }
         game.setStep(Step.ROLL);
         game.setCurrentPlayerNumber(1);
@@ -185,7 +190,7 @@ public class GameService {
         }
         Player currentPlayer = game.getCurrentPlayer();
         if (currentPlayer.getCoins() < landmark.getCost()) {
-            throw new InvalidMoveException("Player does not have enough coins to purchase card.");
+            throw new InvalidMoveException("Player does not have enough coins to purchase landmark.");
         }
         if (currentPlayer.hasLandmark(landmark)) {
             throw new InvalidMoveException("Player cannot purchase the same landmark twice.");
@@ -203,56 +208,6 @@ public class GameService {
         if (game.getStep() != Step.BUY) {
             throw new InvalidMoveException("Cannot complete turn at this time.");
         }
-        //TODO:Removeme
-        Player player1 = game.getPlayerByNumber(1);
-        player1.setCoins(4);
-        player1.getLandmarks().addAll(Set.of(Landmark.SHOPPING_MALL, Landmark.TRAIN_STATION));
-        player1.getStock().putAll(Map.of(
-                Card.WHEAT, 1,
-                Card.BAKERY, 2,
-                Card.CAFE, 2,
-                Card.CONVENIENCE_STORE, 3,
-                Card.FURNITURE_FACTORY, 1,
-                Card.FAMILY_RESTAURANT, 1
-        ));
-
-        Player player2 = game.getPlayerByNumber(2);
-        player2.setCoins(1);
-        player2.getLandmarks().addAll(Set.of(Landmark.TRAIN_STATION, Landmark.AMUSEMENT_PARK));
-        player2.getStock().putAll(Map.of(
-                Card.WHEAT, 1,
-                Card.BAKERY, 1,
-                Card.RANCH, 2,
-                Card.CONVENIENCE_STORE, 1,
-                Card.CHEESE_FACTORY, 2,
-                Card.APPLE_ORCHARD, 2,
-                Card.FRUIT_AND_VEGETABLE_GARDEN, 3
-        ));
-
-        Player player3 = game.getPlayerByNumber(3);
-        player3.setCoins(7);
-        player3.getLandmarks().add(Landmark.TRAIN_STATION);
-        player3.getStock().putAll(Map.of(
-                Card.WHEAT, 1,
-                Card.BAKERY, 1,
-                Card.CAFE, 1,
-                Card.FOREST, 1,
-                Card.FURNITURE_FACTORY, 2,
-                Card.MINE, 2,
-                Card.FAMILY_RESTAURANT, 1
-        ));
-
-        Player player4 = game.getPlayerByNumber(4);
-        player4.setCoins(2);
-        player4.getStock().putAll(Map.of(
-                Card.WHEAT, 2,
-                Card.BAKERY, 1,
-                Card.FOREST, 3,
-                Card.STADIUM, 1,
-                Card.TV_STATION, 1
-        ));
-        game.setStep(Step.ROLL);
-        game.setCurrentPlayerNumber(1);
         endTurn(game);
         save(game);
         return game;

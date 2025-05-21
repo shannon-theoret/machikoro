@@ -9,7 +9,19 @@ const players = ref([]);
 watch(numberOfPlayers, (newCount) => {
     if (newCount > players.value.length) {
         for (let i = players.value.length + 1; i <= newCount; i++) {
-            players.value.push({ number: i, name: '', isNPC: false });
+            players.value.push({
+                number: i,
+                name: '',
+                isNPC: false,
+                strategy: {
+                    ATTACK_FOCUSED: 2,
+                    OPTIMIST: 2,
+                    SAVER: 2,
+                    FRUIT_AND_VEG_FOCUSED: 0,
+                    CHEESE_FOCUSED: 0,
+                    FACTORY_FOCUSED: 0
+                }
+            });
         }
     } else {
         players.value.splice(newCount);

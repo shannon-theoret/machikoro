@@ -14,9 +14,9 @@ public class Strategy {
     private final static double SAVING_VALUE_THRESHOLD = 3.0;
     private final int MAX_COST_FOR_CHEAP_PURCHASE = 2;
     private final static int ENOUGH_COINS_TO_CONSIDER_SAVINGS = 3;
-    private final static double STRATEGY_WEIGHT = 0.5;
-    private final static double PROGRESS_WEIGHT = 5.0;
-    private final static double COST_WEIGHT = 0.5;
+    private final static double STRATEGY_WEIGHT = 0.25;
+    private final static double PROGRESS_WEIGHT = 10.0;
+    private final static double COST_WEIGHT = 0.05;
 
     public Strategy(Map<StrategyName, Integer> strategyDegrees) {
         this.strategyDegrees = strategyDegrees;
@@ -113,9 +113,10 @@ public class Strategy {
         double progressScore = decision.getProgressValue();
 
 
-        return (strategyScore * STRATEGY_WEIGHT
+        return strategyScore * STRATEGY_WEIGHT
                 + benefitScore
-                + progressScore * PROGRESS_WEIGHT)/(decision.getCost() * COST_WEIGHT);
+                + progressScore * PROGRESS_WEIGHT
+                - decision.getCost() * COST_WEIGHT;
     }
 
     private boolean isPurchaseCheap(BuyingDecision buyingDecision, Integer coins) {

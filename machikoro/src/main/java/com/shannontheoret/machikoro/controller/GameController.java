@@ -6,6 +6,7 @@ import com.shannontheoret.machikoro.dto.PlayerDTO;
 import com.shannontheoret.machikoro.entity.Game;
 import com.shannontheoret.machikoro.exception.GameException;
 import com.shannontheoret.machikoro.service.GameService;
+import com.shannontheoret.machikoro.utilities.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,24 +37,20 @@ public class GameController {
         try {
             return ResponseEntity.ok(gameService.findByCode(gameCode));
         } catch (GameException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseUtil.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseUtil.errorResponse(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PostMapping("/newGame")
     public ResponseEntity<Object> newGame(@RequestBody List<PlayerDTO> players) {
         try {
-            Game game = gameService.newGame(players.size());
-            for (PlayerDTO player : players) {
-                gameService.setupPlayer(game.getCode(), player.getPlayerNumber(), player.getPlayerName(), player.getIsNPC());
-            }
-            return ResponseEntity.ok(gameService.beginGame(game.getCode()));
+            return ResponseEntity.ok(gameService.beginGame(players));
         } catch (GameException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseUtil.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseUtil.errorResponse(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -62,9 +59,9 @@ public class GameController {
         try {
             return ResponseEntity.ok(gameService.roll(gameCode, false));
         } catch (GameException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseUtil.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseUtil.errorResponse(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -73,9 +70,9 @@ public class GameController {
         try {
             return ResponseEntity.ok(gameService.roll(gameCode, true));
         } catch (GameException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseUtil.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseUtil.errorResponse(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -84,9 +81,9 @@ public class GameController {
         try {
             return ResponseEntity.ok(gameService.confirmRoll(gameCode));
         } catch (GameException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseUtil.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseUtil.errorResponse(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -95,9 +92,9 @@ public class GameController {
         try {
             return ResponseEntity.ok(gameService.steal(gameCode, playerNumber));
         } catch (GameException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseUtil.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseUtil.errorResponse(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -106,9 +103,9 @@ public class GameController {
         try {
             return ResponseEntity.ok(gameService.purchaseCard(gameCode, card));
         } catch (GameException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseUtil.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseUtil.errorResponse(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -117,9 +114,9 @@ public class GameController {
         try {
             return ResponseEntity.ok(gameService.purchaseLandmark(gameCode, landmark));
         } catch (GameException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseUtil.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseUtil.errorResponse(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -128,9 +125,9 @@ public class GameController {
         try {
             return ResponseEntity.ok(gameService.completeTurn(gameCode));
         } catch (GameException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseUtil.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseUtil.errorResponse(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -139,23 +136,10 @@ public class GameController {
         try {
             return ResponseEntity.ok(gameService.makeNPCMove(gameCode));
         } catch (GameException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseUtil.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseUtil.errorResponse(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-/*
-    @PostMapping("/beginGame")
-    public ResponseEntity<Object> beginGame(@RequestParam String gameCode, Map<Integer, String> playerNames) {
-        try {
-            return ResponseEntity.ok(gameService.beginGame(gameCode, playerNames));
-        } catch (GameException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-
- */
 }
