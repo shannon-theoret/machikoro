@@ -26,6 +26,7 @@ const beginGame = async (players) => {
     playerNumber: index + 1,
     playerName: player.name,
     isNPC: player.isNPC,
+    chooseStrategy: player.chooseStrategy,
     strategy: JSON.parse(JSON.stringify(player.strategy))
   }));
   await makeApiCall('/newGame', playerData, null);

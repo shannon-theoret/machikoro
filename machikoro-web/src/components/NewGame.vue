@@ -13,6 +13,7 @@ watch(numberOfPlayers, (newCount) => {
                 number: i,
                 name: '',
                 isNPC: false,
+                chooseStrategy: false,
                 strategy: {
                     ATTACK_FOCUSED: 2,
                     OPTIMIST: 2,
@@ -31,6 +32,7 @@ watch(numberOfPlayers, (newCount) => {
 
 <template>
     <div class="new-game">
+        <p>Play on one computer with friends, or add NPCs to face off against robots.</p>
         <div class="select">
             <select v-model.number="numberOfPlayers">
                 <option value="0">Select number of players</option>

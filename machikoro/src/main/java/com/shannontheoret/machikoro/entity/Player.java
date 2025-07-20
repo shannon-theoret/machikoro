@@ -3,6 +3,7 @@ package com.shannontheoret.machikoro.entity;
 import com.shannontheoret.machikoro.*;
 import com.shannontheoret.machikoro.dto.PlayerDTO;
 import com.shannontheoret.machikoro.exception.GameMechanicException;
+import com.shannontheoret.machikoro.utilities.GameUtilities;
 import jakarta.persistence.*;
 
 import java.util.*;
@@ -95,7 +96,11 @@ public class Player {
         }
         this.npc = playerDTO.getIsNPC();
         if (npc) {
-            this.strategy = playerDTO.getStrategy();
+            if (playerDTO.getChooseStrategy()) {
+                this.strategy = playerDTO.getStrategy();
+            } else {
+                this.strategy = GameUtilities.generateReasonableStrategy();
+            }
         }
     }
 

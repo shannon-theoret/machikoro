@@ -1,6 +1,5 @@
 <script setup>
 import StrategyInput from './StrategyInput.vue';
-import StrategySlider from './StrategySlider.vue';
 import { computed} from 'vue';
 
 const props = defineProps({
@@ -29,6 +28,10 @@ const player = computed({
             <input type="checkbox" v-model="player.isNPC"  :true-value="true" :false-value="false"  />
             Is NPC
         </label>
-        <StrategyInput v-if="player.isNPC" v-model="player.strategy"/>
+        <label v-if="player.isNPC">
+            <input type="checkbox" v-model="player.chooseStrategy" :true-value="true" :false-value="false" />
+            Choose Strategy
+        </label>
+        <StrategyInput v-if="player.isNPC && player.chooseStrategy" v-model="player.strategy"/>
     </div>
 </template>

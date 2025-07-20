@@ -65,6 +65,5 @@ const handleLandmarkClick = (landmark) => {
         <div class="playerLandmarks">
             <Landmark v-for="(constructed, landmark) in computedLandmarks" :key="landmark" :landmark="landmark" :constructed="constructed" :selected="landmark===selectedLandmark" @click="handleLandmarkClick" />
         </div>
-        {{ player.strategy }}
     </div>
 </template>

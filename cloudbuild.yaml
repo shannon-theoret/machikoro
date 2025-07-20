@@ -1,0 +1,29 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/hale-wind-461813-i3/machikoro-api', '-f', 'machikoro/Dockerfile', 'machikoro']
+
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/hale-wind-461813-i3/machikoro-api']
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - machikoro-api
+      - --image=gcr.io/hale-wind-461813-i3/machikoro-api
+      - --region=us-central1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=8080
+      - --memory=1Gi
+      - --set-secrets=MACHIKORO_DATASOURCE=MACHIKORO_DATASOURCE:latest
+      - --set-secrets=SPRING_DATASOURCE_USERNAME=SPRING_DATASOURCE_USERNAME:latest
+      - --set-secrets=SPRING_DATASOURCE_PASSWORD=SPRING_DATASOURCE_PASSWORD:latest
+
+images:
+  - 'gcr.io/hale-wind-461813-i3/machikoro-api'
