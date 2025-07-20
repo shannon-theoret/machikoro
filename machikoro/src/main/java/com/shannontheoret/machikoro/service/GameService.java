@@ -253,62 +253,6 @@ public class GameService {
         return game;
     }
 
-
-    public Game testStuff(Game game) throws GameMechanicException, GameCodeNotFoundException, InvalidMoveException {
-
-        Player player1 = game.getPlayerByNumber(1);
-        player1.setCoins(4);
-        player1.getLandmarks().addAll(Set.of(Landmark.SHOPPING_MALL, Landmark.TRAIN_STATION));
-        player1.getStock().putAll(Map.of(
-                Card.WHEAT, 1,
-                Card.BAKERY, 2,
-                Card.CAFE, 2,
-                Card.CONVENIENCE_STORE, 3,
-                Card.FURNITURE_FACTORY, 1,
-                Card.FAMILY_RESTAURANT, 1
-        ));
-
-        Player player2 = game.getPlayerByNumber(2);
-        player2.setCoins(1);
-        player2.getLandmarks().addAll(Set.of(Landmark.TRAIN_STATION, Landmark.AMUSEMENT_PARK));
-        player2.getStock().putAll(Map.of(
-                Card.WHEAT, 1,
-                Card.BAKERY, 1,
-                Card.RANCH, 2,
-                Card.CONVENIENCE_STORE, 1,
-                Card.CHEESE_FACTORY, 2,
-                Card.APPLE_ORCHARD, 2,
-                Card.FRUIT_AND_VEGETABLE_GARDEN, 3
-        ));
-
-        Player player3 = game.getPlayerByNumber(3);
-        player3.setCoins(7);
-        player3.getLandmarks().add(Landmark.TRAIN_STATION);
-        player3.getStock().putAll(Map.of(
-                Card.WHEAT, 1,
-                Card.BAKERY, 1,
-                Card.CAFE, 1,
-                Card.FOREST, 1,
-                Card.FURNITURE_FACTORY, 2,
-                Card.MINE, 2,
-                Card.FAMILY_RESTAURANT, 1
-        ));
-
-        Player player4 = game.getPlayerByNumber(4);
-        player4.setCoins(2);
-        player4.getStock().putAll(Map.of(
-                Card.WHEAT, 2,
-                Card.BAKERY, 1,
-                Card.FOREST, 3,
-                Card.STADIUM, 1,
-                Card.TV_STATION, 1
-        ));
-        game.setStep(Step.ROLL);
-        game.setCurrentPlayerNumber(1);
-        save(game);
-        return game;
-    }
-
     @Transactional
     private void save(Game game) {
         for (Player player : game.getPlayers()) {
