@@ -56,5 +56,4 @@ target/
 # Sensitive Configuration
 .env
 .env.*
-application.properties
 application.yml
