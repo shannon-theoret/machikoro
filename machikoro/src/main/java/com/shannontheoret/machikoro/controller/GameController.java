@@ -14,6 +14,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(
+        origins = {"https://machikoro.shannontheoret.com", "http://localhost:5173"},
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
+        allowCredentials = "true"
+)
 @RestController
 public class GameController {
     private GameService gameService;
