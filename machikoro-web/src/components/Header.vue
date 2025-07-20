@@ -61,7 +61,7 @@ const toggleMenu = () => {
 
         <div class="navbar-end">
           <div class="navbar-item">
-            <p v-if="gameCode" class="title is-6">Game Code: {{ gameCode }}</p>
+            <p v-if="gameCode" class="title is-4">Game Code: {{ gameCode }}</p>
           </div>
         </div>
       </div>
