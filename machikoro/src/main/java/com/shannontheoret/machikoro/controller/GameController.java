@@ -23,15 +23,6 @@ public class GameController {
         this.gameService = gameService;
     }
 
-    @GetMapping("/testStuff")
-    public ResponseEntity<Object> testStuff(@RequestParam String gameCode) {
-        try {
-            return ResponseEntity.ok("HI!");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-
     @GetMapping
     public ResponseEntity<Object> getGame(@RequestParam String gameCode) {
         try {
